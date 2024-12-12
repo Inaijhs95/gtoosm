@@ -4,38 +4,86 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>オサムが愛した数式</title>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
     body {
-        background-color: #1c1c1c;
+        background-color: #2e2e2e;
+        background-image: url('https://www.transparenttextures.com/patterns/blackboard.png'); /* 黒板風の背景テクスチャ */
         color: #e0e0e0;
-        font-family: 'Courier New', Courier, monospace;
+        font-family: 'Permanent Marker', cursive; /* チョーク風フォント */
         display: flex;
         justify-content: center;
         align-items: flex-start;
         padding: 20px;
-        height: 100vh;
+        min-height: 100vh;
         overflow-y: auto;
     }
     .chalkboard {
         width: 100%;
         max-width: 800px;
         margin: 0 auto;
-        padding: 10px;
+        padding: 30px;
+        background-color: rgba(0, 0, 0, 0.7);
+        border: 5px solid #3e3e3e;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        border-radius: 10px;
+        position: relative;
+    }
+    .chalkboard::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.05);
+        pointer-events: none;
     }
     .equation {
-        white-space: pre;
-        font-size: 1.4em;
-        line-height: 1.6em;
-        opacity: 0.9;
-        text-shadow: 0 0 5px #333;
+        white-space: pre-wrap;
+        font-size: 1.5em;
+        line-height: 1.8em;
+        opacity: 0.95;
+        text-shadow: 0 0 3px #fff, 0 0 5px #ccc;
+        margin: 0;
     }
     .chalk-text {
-        color: #f0f0f0;
+        color: #fdfdfd;
     }
     .link {
-        color: #ff6f61;
+        color: #ffeb3b;
         text-decoration: underline;
         cursor: pointer;
+        transition: color 0.3s;
+    }
+    .link:hover {
+        color: #ffee58;
+    }
+    /* タイピングカーソルのスタイル */
+    .cursor {
+        display: inline-block;
+        width: 10px;
+        background-color: #ffeb3b;
+        margin-left: 2px;
+        animation: blink 1s infinite;
+    }
+    @keyframes blink {
+        0%, 50% {
+            opacity: 1;
+        }
+        51%, 100% {
+            opacity: 0;
+        }
+    }
+    /* レスポンシブデザイン */
+    @media (max-width: 600px) {
+        .chalkboard {
+            padding: 20px;
+        }
+        .equation {
+            font-size: 1.2em;
+            line-height: 1.5em;
+        }
     }
 </style>
 </head>
@@ -48,31 +96,32 @@
 <script>
     const equationElement = document.getElementById('equation');
     const equations = [
-        "∫_0^∞ (x^3 e^{-x}) dx = 6",
-        "ζ(2) = π^2 / 6",
-        "lim_{x→0} (sin(x)/x) = 1",
-        "Σ_{k=1}^{∞} (1/k^4) = π^4 / 90",
-        "d/dx (e^x sin(x)) = e^x(sin(x) + cos(x))",
+        "∫₀^∞ (x³ e^{-x}) dx = 6",
+        "ζ(2) = π² / 6",
+        "limₓ→0 (sin(x)/x) = 1",
+        "Σₖ=₁^∞ (1/k⁴) = π⁴ / 90",
+        "d/dx (eˣ sin(x)) = eˣ(sin(x) + cos(x))",
         "∇ × (∇φ) = 0",
-        "∫ e^{-x^2} dx = √π",
-        "cos(x)^2 + sin(x)^2 = 1",
+        "∫ e^{-x²} dx = √π",
+        "cos²(x) + sin²(x) = 1",
         "Γ(3/2) = √π / 2",
-        "(1 + i)^2 = 2i",
-        "Σ_{n=1}^{∞} 1/n(n+1) = 1",
-        "P(x) = x^4 - 4x^3 + 6x^2 - 4x + 1",
+        "(1 + i)² = 2i",
+        "Σₙ=₁^∞ 1/n(n+1) = 1",
+        "P(x) = x⁴ - 4x³ + 6x² - 4x + 1",
         "x = 19 * (9 + 1) - 18",
         "171"
     ];
 
     let index = 0;
     let charIndex = 0;
+    let isLink = false;
 
     function typeEquation() {
         if (index < equations.length) {
             if (charIndex < equations[index].length) {
                 equationElement.textContent += equations[index][charIndex];
                 charIndex++;
-                setTimeout(typeEquation, 60);
+                setTimeout(typeEquation, 60 + Math.random() * 40); // 微妙なタイミングの変化
             } else {
                 equationElement.textContent += "\n";
                 charIndex = 0;
@@ -82,7 +131,7 @@
                 if (index === equations.length - 1) {
                     makeLink();
                 } else {
-                    setTimeout(typeEquation, 300);
+                    setTimeout(typeEquation, 500);
                 }
             }
         }
@@ -95,8 +144,20 @@
         linkText.addEventListener('click', () => {
             window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A2%E3%83%BC%E3%83%AB%E3%82%B9%E4%BF%A1%E5%8F%B7%E3%80%81%E8%A7%A3%E8%AA%AD%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81";
         });
+
         equationElement.appendChild(linkText);
+
+        // カーソルを非表示にする
+        const cursor = document.querySelector('.cursor');
+        if (cursor) {
+            cursor.style.display = 'none';
+        }
     }
+
+    // タイピングカーソルの追加
+    const cursor = document.createElement('span');
+    cursor.classList.add('cursor');
+    equationElement.appendChild(cursor);
 
     // 数式アニメーションの開始
     typeEquation();
@@ -104,4 +165,3 @@
 
 </body>
 </html>
-
