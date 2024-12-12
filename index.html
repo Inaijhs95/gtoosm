@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>オサムが愛した数式</title>
-<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
 <style>
     body {
         background-color: #2e2e2e;
-        background-image: url('https://www.transparenttextures.com/patterns/blackboard.png'); /* 黒板風の背景テクスチャ */
+        background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); /* よりリアルな黒板テクスチャに変更 */
         color: #e0e0e0;
-        font-family: 'Permanent Marker', cursive; /* チョーク風フォント */
+        font-family: 'Shadows Into Light', cursive; /* チョーク風フォント */
         display: flex;
         justify-content: center;
         align-items: flex-start;
@@ -23,11 +23,13 @@
         max-width: 800px;
         margin: 0 auto;
         padding: 30px;
-        background-color: rgba(0, 0, 0, 0.7);
+        background-color: rgba(20, 20, 20, 0.85); /* 黒板の色を濃く */
         border: 5px solid #3e3e3e;
         box-shadow: 0 0 20px rgba(0,0,0,0.5);
         border-radius: 10px;
         position: relative;
+        background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); /* 黒板のテクスチャを重ねる */
+        background-blend-mode: multiply;
     }
     .chalkboard::before {
         content: '';
@@ -36,7 +38,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.02); /* 微細なノイズを追加 */
         pointer-events: none;
     }
     .equation {
@@ -44,11 +46,12 @@
         font-size: 1.5em;
         line-height: 1.8em;
         opacity: 0.95;
-        text-shadow: 0 0 3px #fff, 0 0 5px #ccc;
+        text-shadow: 1px 1px 1px #555; /* シャドウを控えめに */
         margin: 0;
+        color: #f5f5f5; /* チョークの色を少し濃く */
     }
     .chalk-text {
-        color: #fdfdfd;
+        color: #f5f5f5;
     }
     .link {
         color: #ffeb3b;
@@ -121,7 +124,7 @@
             if (charIndex < equations[index].length) {
                 equationElement.textContent += equations[index][charIndex];
                 charIndex++;
-                setTimeout(typeEquation, 60 + Math.random() * 40); // 微妙なタイミングの変化
+                setTimeout(typeEquation, 30 + Math.random() * 20); // タイピング速度を速く
             } else {
                 equationElement.textContent += "\n";
                 charIndex = 0;
@@ -142,9 +145,10 @@
         linkText.classList.add('link');
         linkText.textContent = "171";
         linkText.addEventListener('click', () => {
-            window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A2%E3%83%BC%E3%83%AB%E3%82%B9%E4%BF%A1%E5%8F%B7%E3%80%81%E8%A7%A3%E8%AA%AD%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81";
-        });
+            window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F"; // 指定のURLに変更
+        }
 
+        );
         equationElement.appendChild(linkText);
 
         // カーソルを非表示にする
