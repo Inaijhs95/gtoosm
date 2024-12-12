@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>オサムが愛した数式</title>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
 <style>
     body {
         background-color: #2e2e2e;
-        background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); /* 黒板風の背景テクスチャ */
+        background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png'); /* よりリアルな黒板テクスチャに変更 */
         color: #e0e0e0;
-        font-family: 'Caveat', cursive; /* 新しいチョーク風フォント */
+        font-family: 'Shadows Into Light', cursive; /* チョーク風フォント */
         display: flex;
         justify-content: center;
         align-items: flex-start;
@@ -43,8 +43,8 @@
     }
     .equation {
         white-space: pre-wrap;
-        font-size: 1.4em;
-        line-height: 1.6em;
+        font-size: 1.5em;
+        line-height: 1.8em;
         opacity: 0.95;
         text-shadow: 1px 1px 1px #555; /* シャドウを控えめに */
         margin: 0;
@@ -62,6 +62,7 @@
     .link:hover {
         color: #ffee58;
     }
+    /* タイピングカーソルのスタイル */
     .cursor {
         display: inline-block;
         width: 10px;
@@ -77,6 +78,7 @@
             opacity: 0;
         }
     }
+    /* レスポンシブデザイン */
     @media (max-width: 600px) {
         .chalkboard {
             padding: 20px;
@@ -97,55 +99,57 @@
 <script>
     const equationElement = document.getElementById('equation');
     const equations = [
-        "1. \\( I = \\int_{0}^{\\infty} x^3 e^{-x} dx = 6 \\)",
-        "2. \\( \\zeta(2) = \\frac{\\pi^2}{6} \\)",
-        "3. \\( \\lim_{x \\to 0} \\frac{\\sin(x)}{x} = 1 \\)",
-        "4. \\( S = \\sum_{k=1}^{\\infty} \\frac{1}{k^4} = \\frac{\\pi^4}{90} \\)",
-        "5. \\( \\Gamma\\left(\\frac{3}{2}\\right) = \\frac{\\sqrt{\\pi}}{2} \\)",
-        "6. \\( (1 + i)^2 = 2i \\)",
-        "7. \\( T = \\sum_{n=1}^{\\infty} \\frac{1}{n(n+1)} = 1 \\)",
-        "8. \\( P(x) = x^4 - 4x^3 + 6x^2 - 4x + 1 \\)",
-        "   \\( P(2) = 2^4 - 4 \\times 2^3 + 6 \\times 2^2 - 4 \\times 2 + 1 = 1 \\)",
-        "",
-        "9. \\( a = I \\times \\zeta(2) = 6 \\times \\frac{\\pi^2}{6} = \\pi^2 \\approx 9.8696 \\)",
-        "10. \\( b = a \\times S = \\pi^2 \\times \\frac{\\pi^4}{90} = \\frac{\\pi^6}{90} \\approx 10.4674 \\)",
-        "11. \\( c = b \\times \\Gamma\\left(\\frac{3}{2}\\right) = \\frac{\\pi^6}{90} \\times \\frac{\\sqrt{\\pi}}{2} = \\frac{\\pi^{6.5}}{180} \\approx 5.2337 \\)",
-        "12. \\( d = c \\times T = 5.2337 \\times 1 = 5.2337 \\)",
-        "13. \\( e = d + P(2) = 5.2337 + 1 = 6.2337 \\)",
-        "14. \\( f = e \\times 27.5 \\approx 6.2337 \\times 27.5 \\approx 171 \\)",
-        "A. \\( １７１ // \\)"
+        "∫₀^∞ (x³ e^{-x}) dx = 6",
+        "ζ(2) = π² / 6",
+        "limₓ→0 (sin(x)/x) = 1",
+        "Σₖ=₁^∞ (1/k⁴) = π⁴ / 90",
+        "d/dx (eˣ sin(x)) = eˣ(sin(x) + cos(x))",
+        "∇ × (∇φ) = 0",
+        "∫ e^{-x²} dx = √π",
+        "cos²(x) + sin²(x) = 1",
+        "Γ(3/2) = √π / 2",
+        "(1 + i)² = 2i",
+        "Σₙ=₁^∞ 1/n(n+1) = 1",
+        "P(x) = x⁴ - 4x³ + 6x² - 4x + 1",
+        "x = 19 * (9 + 1) - 18",
+        "171"
     ];
 
     let index = 0;
     let charIndex = 0;
+    let isLink = false;
 
     function typeEquation() {
         if (index < equations.length) {
             if (charIndex < equations[index].length) {
-                // Handle LaTeX rendering
-                const currentLine = equations[index].substring(0, charIndex + 1);
-                equationElement.innerHTML = equations.slice(0, index).join('\n') + '\n' + currentLine + '<span class="cursor"></span>';
+                equationElement.textContent += equations[index][charIndex];
                 charIndex++;
                 setTimeout(typeEquation, 30 + Math.random() * 20); // タイピング速度を速く
             } else {
-                equationElement.innerHTML += "\n";
+                equationElement.textContent += "\n";
                 charIndex = 0;
                 index++;
-                setTimeout(typeEquation, 300);
+
+                // 最後に「171」をリンクにする
+                if (index === equations.length - 1) {
+                    makeLink();
+                } else {
+                    setTimeout(typeEquation, 500);
+                }
             }
-        } else {
-            // 最後の行をリンクに変更
-            makeLink();
         }
     }
 
     function makeLink() {
-        // 最後の「A. １７１ //」をリンクに変更
-        equationElement.innerHTML = equationElement.innerHTML.replace("A. \\( １７１ // \\\\ \\)", "A. <span class='link'>１７１</span> //");
-        const linkText = equationElement.querySelector('.link');
+        const linkText = document.createElement('span');
+        linkText.classList.add('link');
+        linkText.textContent = "１７１";
         linkText.addEventListener('click', () => {
-            window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
-        });
+            window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F"; // 指定のURLに変更
+        }
+
+        );
+        equationElement.appendChild(linkText);
 
         // カーソルを非表示にする
         const cursor = document.querySelector('.cursor');
