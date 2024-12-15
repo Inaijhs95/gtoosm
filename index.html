@@ -63,28 +63,25 @@
         }
 
         .dice {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             position: relative;
             transform-style: preserve-3d;
             transform: rotateX(0deg) rotateY(0deg);
-            animation: rotateDice 5s infinite linear;
+            cursor: pointer;
+            transition: transform 2s;
+            border-radius: 15px; /* 角を丸める */
         }
 
-        .dice.stop {
-            animation: none;
-        }
-
-        @keyframes rotateDice {
-            0% { transform: rotateX(0deg) rotateY(0deg); }
-            100% { transform: rotateX(360deg) rotateY(360deg); }
+        .dice:hover {
+            transform: rotateX(360deg) rotateY(360deg); /* ホバー時に回転 */
         }
 
         /* サイコロの各面 */
         .face {
             position: absolute;
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             background: rgba(255, 255, 255, 0.9);
             border: 2px solid #000;
             display: flex;
@@ -92,14 +89,15 @@
             align-items: center;
             font-size: 2em;
             font-weight: bold;
+            border-radius: 15px; /* 角を丸める */
         }
 
-        .front  { transform: rotateY(0deg) translateZ(40px); }
-        .back   { transform: rotateY(180deg) translateZ(40px); }
-        .right  { transform: rotateY(90deg) translateZ(40px); }
-        .left   { transform: rotateY(-90deg) translateZ(40px); }
-        .top    { transform: rotateX(90deg) translateZ(40px); }
-        .bottom { transform: rotateX(-90deg) translateZ(40px); }
+        .front  { transform: rotateY(0deg) translateZ(50px); }
+        .back   { transform: rotateY(180deg) translateZ(50px); }
+        .right  { transform: rotateY(90deg) translateZ(50px); }
+        .left   { transform: rotateY(-90deg) translateZ(50px); }
+        .top    { transform: rotateX(90deg) translateZ(50px); }
+        .bottom { transform: rotateX(-90deg) translateZ(50px); }
 
         /* 画像のスタイル */
         .flash-image {
@@ -113,16 +111,12 @@
             z-index: 3;
             max-width: 80%;
             max-height: 80%;
+            border-radius: 10px;
         }
 
         @keyframes blink {
             0%, 50% { opacity: 0.2; }
             25%, 75% { opacity: 1; }
-        }
-
-        /* 最終リンクのスタイル */
-        .final-link {
-            display: none;
         }
 
         /* レスポンシブデザイン */
@@ -131,12 +125,12 @@
                 gap: 10px;
             }
             .dice {
-                width: 60px;
-                height: 60px;
+                width: 70px;
+                height: 70px;
             }
             .face {
-                width: 60px;
-                height: 60px;
+                width: 70px;
+                height: 70px;
                 font-size: 1.5em;
             }
             .flash-image {
@@ -150,7 +144,7 @@
 
     <!-- 数学的な背景シンボル -->
     <script>
-        const symbols = ['π', 'Σ', '∫', '036', '171', '036', '171', 'Δ', '∞', '√', '≈', '≡', '≤', '≥', '±', 'θ', 'λ', 'Ω'];
+        const symbols = ['π', 'Σ', '∫', 'Δ', '∞', '√', '≈', '≡', '≤', '≥', '±', 'θ', 'λ', 'Ω'];
         const numberOfSymbols = 30;
 
         for (let i = 0; i < numberOfSymbols; i++) {
@@ -208,52 +202,41 @@
         const dice6 = document.getElementById('dice6');
         const flashImage = document.getElementById('flashImage');
 
-        // サイコロの3D回転をランダム化
-        function randomizeRotation(dice) {
-            const randomX = Math.floor(Math.random() * 360);
-            const randomY = Math.floor(Math.random() * 360);
-            dice.style.transform = `rotateX(${randomX}deg) rotateY(${randomY}deg)`;
-        }
+        // サイコロの停止状態を追跡
+        let isStopped = false;
 
-        // ランダムな回転を適用
-        function applyRandomRotation() {
-            randomizeRotation(dice0);
-            randomizeRotation(dice3);
-            randomizeRotation(dice6);
-        }
+        // サイコロのクリックイベント
+        function stopDice() {
+            if (isStopped) return; // 既に停止している場合は無視
+            isStopped = true;
 
-        // 初期回転
-        applyRandomRotation();
+            // 回転を停止させる
+            dice0.style.animationPlayState = 'paused';
+            dice3.style.animationPlayState = 'paused';
+            dice6.style.animationPlayState = 'paused';
 
-        // 一定間隔で回転を更新
-        const rotationInterval = setInterval(applyRandomRotation, 3000); // 3秒ごとに回転
+            // 固定された回転角度を設定（0, 3, 6が表示されるように）
+            // ここではサイコロ0が前面に0、サイコロ3が前面に3、サイコロ6が前面に6を表示するように回転を調整
+            dice0.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            dice3.style.transform = 'rotateX(0deg) rotateY(180deg)';
+            dice6.style.transform = 'rotateX(0deg) rotateY(90deg)';
 
-        // サイコロの回転を停止させる関数
-        function stopRotation() {
-            clearInterval(rotationInterval);
-            dice0.classList.add('stop');
-            dice3.classList.add('stop');
-            dice6.classList.add('stop');
-
-            // 最終的な回転位置をランダムに設定
-            randomizeRotation(dice0);
-            randomizeRotation(dice3);
-            randomizeRotation(dice6);
-
-            // 画像を表示して点滅させる
+            // 画像を最前面に表示
             flashImage.style.display = 'block';
+
+            // 2秒間点滅後にリダイレクト
             setTimeout(() => {
                 window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E5%85%A5%E5%8A%9B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F";
-            }, 2000); // 2秒後にリダイレクト
+            }, 2000);
         }
 
-        // 一定時間後に回転を停止
-        setTimeout(stopRotation, 7000); // 7秒後に停止（調整可能）
+        // サイコロにクリックイベントを追加
+        dice0.addEventListener('click', stopDice);
+        dice3.addEventListener('click', stopDice);
+        dice6.addEventListener('click', stopDice);
 
-        // サイコロが回転し続けないようにイベントリスナーを追加
-        dice0.addEventListener('animationiteration', randomizeRotation.bind(null, dice0));
-        dice3.addEventListener('animationiteration', randomizeRotation.bind(null, dice3));
-        dice6.addEventListener('animationiteration', randomizeRotation.bind(null, dice6));
+        // 自動的に停止させる場合（ユーザーがタップしなくても）
+        // setTimeout(stopDice, 5000); // 5秒後に自動停止（必要に応じて調整）
     </script>
 
 </body>
