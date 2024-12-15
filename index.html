@@ -112,17 +112,17 @@
         "Σₙ=₁^∞ 1/n(n+1) = 1",
         "P(x) = x⁴ - 4x³ + 6x² - 4x + 1",
         "x = 19 * (9 + 1) - 19",
-        "171"
+        "036"
     ];
 
     let index = 0;
     let charIndex = 0;
-    let isLink = false;
 
     function typeEquation() {
         if (index < equations.length) {
             if (charIndex < equations[index].length) {
-                equationElement.textContent += equations[index][charIndex];
+                const currentChar = equations[index][charIndex];
+                equationElement.textContent += currentChar;
                 charIndex++;
                 setTimeout(typeEquation, 30 + Math.random() * 20); // タイピング速度を速く
             } else {
@@ -130,8 +130,8 @@
                 charIndex = 0;
                 index++;
 
-                // 最後に「171」をリンクにする
-                if (index === equations.length - 1) {
+                // 最後の方程式に達したらリンク化
+                if (index === equations.length) {
                     makeLink();
                 } else {
                     setTimeout(typeEquation, 500);
@@ -143,12 +143,10 @@
     function makeLink() {
         const linkText = document.createElement('span');
         linkText.classList.add('link');
-        linkText.textContent = "１７１";
+        linkText.textContent = "036";
         linkText.addEventListener('click', () => {
-            window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F"; // 指定のURLに変更
-        }
-
-        );
+            window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E5%85%A5%E5%8A%9B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F"; // 指定のURLに変更
+        });
         equationElement.appendChild(linkText);
 
         // カーソルを非表示にする
