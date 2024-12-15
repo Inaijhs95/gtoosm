@@ -13,89 +13,85 @@
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             font-family: 'Roboto', sans-serif;
             color: #ffffff;
-            overflow-x: hidden;
-        }
-
-        /* セクションスタイル */
-        .section {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            overflow: hidden;
             position: relative;
-            padding: 20px;
-            text-align: center;
         }
 
-        /* アニメーション用の図形 */
-        .shape {
+        /* 動的な数学シンボルのスタイル */
+        .symbol {
             position: absolute;
-            border-radius: 50%;
-            opacity: 0.3;
-            animation: float 10s infinite ease-in-out;
-        }
-
-        .shape1 {
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.2);
-            top: 20%;
-            left: 15%;
-            animation-delay: 0s;
-        }
-
-        .shape2 {
-            width: 150px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.2);
-            bottom: 25%;
-            right: 10%;
-            animation-delay: 2s;
-        }
-
-        .shape3 {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            top: 50%;
-            left: 70%;
-            animation-delay: 4s;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.7);
+            user-select: none;
+            pointer-events: none;
+            animation: float 10s linear infinite;
         }
 
         @keyframes float {
-            0% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-            100% { transform: translateY(0) rotate(360deg); }
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-100px) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) rotate(360deg);
+                opacity: 0.7;
+            }
         }
 
-        /* コンテンツスタイル */
+        /* コンテンツのスタイル */
         .content {
-            z-index: 1;
-            max-width: 800px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            max-width: 90%;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         h1 {
-            font-size: 3em;
+            font-size: 2.5em;
             margin-bottom: 20px;
-            animation: fadeIn 2s forwards;
+            animation: fadeIn 2s ease-out forwards;
+            opacity: 0;
         }
 
-        p {
-            font-size: 1.2em;
-            line-height: 1.6em;
-            margin-bottom: 40px;
-            animation: fadeIn 3s forwards;
+        .equation {
+            font-size: 1.5em;
+            line-height: 1.8em;
+            margin: 0 auto;
+            max-width: 800px;
+            min-height: 50px;
+            position: relative;
+            color: #f5f5f5;
+        }
+
+        .equation span {
             opacity: 0;
+            animation: fadeInChar 0.05s forwards;
+        }
+
+        @keyframes fadeInChar {
+            to { opacity: 1; }
         }
 
         .final-link {
+            display: inline-block;
+            margin-top: 30px;
             font-size: 2em;
             color: #ffeb3b;
-            text-decoration: none;
-            border-bottom: 2px solid #ffeb3b;
+            text-decoration: underline;
+            cursor: pointer;
             transition: color 0.3s, transform 0.3s;
             opacity: 0;
-            animation: fadeIn 5s forwards;
+            animation: fadeIn 3s forwards;
         }
 
         .final-link:hover {
@@ -103,110 +99,125 @@
             transform: scale(1.1);
         }
 
-        /* 数式アニメーション */
-        .math-equation {
-            font-size: 2em;
-            margin-bottom: 20px;
-            opacity: 0;
-            animation: slideIn 4s forwards;
+        /* タイピングカーソルのスタイル */
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            background-color: #ffeb3b;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+            height: 1.2em;
+            vertical-align: bottom;
         }
 
+        @keyframes blink {
+            0%, 50% {
+                opacity: 1;
+            }
+            51%, 100% {
+                opacity: 0;
+            }
+        }
+
+        /* フェードインアニメーション */
         @keyframes fadeIn {
             to { opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         /* レスポンシブデザイン */
         @media (max-width: 600px) {
             h1 {
-                font-size: 2.5em;
+                font-size: 1.8em;
             }
-            .math-equation {
-                font-size: 1.5em;
+            .equation {
+                font-size: 1.2em;
             }
             .final-link {
                 font-size: 1.5em;
+            }
+            .symbol {
+                font-size: 18px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- セクション1 -->
-    <div class="section" id="section1">
-        <div class="shape shape1"></div>
-        <div class="shape shape2"></div>
-        <div class="shape shape3"></div>
-        <div class="content">
-            <h1>数学の美しさに触れて</h1>
-            <p>数学は単なる数式の集まりではなく、宇宙の法則を解き明かす鍵です。私たちと一緒に数学の魅力を探求しましょう。</p>
-        </div>
-    </div>
-
-    <!-- セクション2 -->
-    <div class="section" id="section2">
-        <div class="content">
-            <div class="math-equation" id="equation"></div>
-            <p>最後の答えを見つけたら、下の「036」をクリックして特別なメッセージを受け取りましょう。</p>
-            <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E5%85%A5%E5%8A%9B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" class="final-link" id="finalLink">036</a>
-        </div>
-    </div>
-
+    <!-- 数学シンボルの背景 -->
     <script>
-        // 数式のリスト
+        const symbols = ['π', 'Σ', '∫', 'Δ', '∞', '√', '≈', '≡', '≤', '≥', '±', 'θ', 'λ', 'Ω'];
+        const numberOfSymbols = 30;
+
+        for (let i = 0; i < numberOfSymbols; i++) {
+            const symbol = document.createElement('div');
+            symbol.classList.add('symbol');
+            symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            symbol.style.top = Math.random() * 100 + 'vh';
+            symbol.style.left = Math.random() * 100 + 'vw';
+            symbol.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            symbol.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            symbol.style.animationDelay = '-' + Math.random() * 10 + 's';
+            document.body.appendChild(symbol);
+        }
+    </script>
+
+    <!-- コンテンツ -->
+    <div class="content">
+        <h1>数学の世界へようこそ</h1>
+        <div class="equation" id="equation"></div>
+        <a href="https://line.me/R/oaMessage/%40778unfqy/%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E5%85%A5%E5%8A%9B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F" class="final-link" id="finalLink">036</a>
+    </div>
+
+    <!-- タイピングアニメーションのスクリプト -->
+    <script>
+        const equationElement = document.getElementById('equation');
         const equations = [
             "E = mc²",
             "a² + b² = c²",
             "∫₀^∞ e^{-x} dx = 1",
             "Σₙ=₁^∞ 1/n² = π² / 6",
             "limₓ→0 sin(x)/x = 1",
-            "∇ × (∇φ) = 0",
             "F = G(m₁m₂)/r²",
             "Φ = ∫ A · dS",
-            "a + b + c = d",
             "ΔxΔp ≥ ħ/2",
             "x² + y² + z² = r²",
             "i² = -1",
             "e^{iπ} + 1 = 0",
+            "Σₙ=₁^∞ 1/n(n+1) = 1",
+            "P(x) = x⁴ - 4x³ + 6x² - 4x + 1",
             "036" // 最終答え
         ];
 
-        const equationElement = document.getElementById('equation');
-        const finalLink = document.getElementById('finalLink');
         let currentEquation = 0;
         let currentChar = 0;
 
         function typeEquation() {
             if (currentEquation < equations.length) {
                 if (currentChar < equations[currentEquation].length) {
-                    equationElement.textContent += equations[currentEquation][currentChar];
+                    const currentSymbol = equations[currentEquation][currentChar];
+                    const span = document.createElement('span');
+                    span.textContent = currentSymbol;
+                    span.style.animationDelay = (currentChar * 50) + 'ms';
+                    equationElement.appendChild(span);
                     currentChar++;
-                    setTimeout(typeEquation, 100);
+                    setTimeout(typeEquation, 50);
                 } else {
-                    equationElement.textContent += "\n";
-                    currentEquation++;
+                    equationElement.appendChild(document.createElement('br'));
                     currentChar = 0;
+                    currentEquation++;
                     setTimeout(typeEquation, 500);
                 }
             }
         }
 
-        // ページ読み込み時にタイピング開始
+        // タイピングカーソルの追加
+        const cursor = document.createElement('span');
+        cursor.classList.add('cursor');
+        equationElement.appendChild(cursor);
+
+        // 数式アニメーションの開始
         window.onload = typeEquation;
-
-        // 最終リンクの表示タイミングを調整
-        equations.push(""); // 空行を追加
-        finalLink.style.opacity = '0';
-        finalLink.style.transition = 'opacity 2s';
-
-        setTimeout(() => {
-            finalLink.style.opacity = '1';
-        }, 7000); // タイピング完了後に表示（調整可能）
-
     </script>
+
 </body>
 </html>
