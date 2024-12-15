@@ -69,9 +69,8 @@
             transform-style: preserve-3d;
             transform: rotateX(0deg) rotateY(0deg);
             cursor: pointer;
-            transition: transform 0.5s;
             border-radius: 15px; /* 角を丸める */
-            animation: rotateDice 1s linear infinite;
+            animation: rotateDice 0.1s linear infinite; /* 超高速回転 */
         }
 
         .dice.stop {
@@ -96,6 +95,7 @@
             font-size: 2em;
             font-weight: bold;
             border-radius: 15px; /* 角を丸める */
+            color: #000000; /* 数字の色を黒に */
         }
 
         .front  { transform: rotateY(0deg) translateZ(50px); }
@@ -208,41 +208,45 @@
         const dice6 = document.getElementById('dice6');
         const flashImage = document.getElementById('flashImage');
 
-        // サイコロの停止状態を追跡
-        let isStopped = false;
+        // サイコロの順序と目のリスト
+        const diceOrder = [dice0, dice3, dice6];
+        const desiredNumbers = ['0', '3', '6'];
+        let currentStopIndex = 0;
 
-        // サイコロのクリックイベント
-        function stopDice() {
-            if (isStopped) return; // 既に停止している場合は無視
-            isStopped = true;
+        // サイコロを停止する関数
+        function stopDice(dice, number) {
+            dice.classList.add('stop');
+            // 固定された回転角度を設定（frontに0,3,6が表示されるように）
+            if (number === '0') {
+                dice.style.transform = 'rotateX(0deg) rotateY(0deg)';
+            } else if (number === '3') {
+                dice.style.transform = 'rotateX(0deg) rotateY(180deg)';
+            } else if (number === '6') {
+                dice.style.transform = 'rotateX(0deg) rotateY(90deg)';
+            }
+        }
 
-            // 回転を停止させる
-            dice0.classList.add('stop');
-            dice3.classList.add('stop');
-            dice6.classList.add('stop');
-
-            // 固定された回転角度を設定（0, 3, 6が表示されるように）
-            // ここではサイコロ0がfrontに0、サイコロ3がfrontに3、サイコロ6がfrontに6を表示するように回転を調整
-            dice0.style.transform = 'rotateX(0deg) rotateY(0deg)';
-            dice3.style.transform = 'rotateX(0deg) rotateY(180deg)';
-            dice6.style.transform = 'rotateX(0deg) rotateY(90deg)';
-
-            // 画像を最前面に表示
-            flashImage.style.display = 'block';
-
-            // 2秒間点滅後にリダイレクト
-            setTimeout(() => {
-                window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E5%85%A5%E5%8A%9B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F";
-            }, 2000);
+        // ユーザーがサイコロをクリックしたときの処理
+        function handleDiceClick(event) {
+            if (currentStopIndex >= diceOrder.length) return; // すでに全て停止
+            const dice = diceOrder[currentStopIndex];
+            const desiredNumber = desiredNumbers[currentStopIndex];
+            if (dice !== event.currentTarget) return; // 順番を守る
+            stopDice(dice, desiredNumber);
+            currentStopIndex++;
+            if (currentStopIndex === diceOrder.length) {
+                // 最後のサイコロが停止したら画像を表示して点滅後リダイレクト
+                flashImage.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%82%92%E5%85%A5%E5%8A%9B%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F";
+                }, 2000); // 2秒後にリダイレクト
+            }
         }
 
         // サイコロにクリックイベントを追加
-        dice0.addEventListener('click', stopDice);
-        dice3.addEventListener('click', stopDice);
-        dice6.addEventListener('click', stopDice);
-
-        // 自動的に停止させる場合（ユーザーがタップしなくても）
-        // setTimeout(stopDice, 5000); // 5秒後に停止（必要に応じて調整）
+        dice0.addEventListener('click', handleDiceClick);
+        dice3.addEventListener('click', handleDiceClick);
+        dice6.addEventListener('click', handleDiceClick);
     </script>
 
 </body>
