@@ -69,12 +69,18 @@
             transform-style: preserve-3d;
             transform: rotateX(0deg) rotateY(0deg);
             cursor: pointer;
-            transition: transform 2s;
+            transition: transform 0.5s;
             border-radius: 15px; /* 角を丸める */
+            animation: rotateDice 1s linear infinite;
         }
 
-        .dice:hover {
-            transform: rotateX(360deg) rotateY(360deg); /* ホバー時に回転 */
+        .dice.stop {
+            animation: none;
+        }
+
+        @keyframes rotateDice {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
         }
 
         /* サイコロの各面 */
@@ -211,12 +217,12 @@
             isStopped = true;
 
             // 回転を停止させる
-            dice0.style.animationPlayState = 'paused';
-            dice3.style.animationPlayState = 'paused';
-            dice6.style.animationPlayState = 'paused';
+            dice0.classList.add('stop');
+            dice3.classList.add('stop');
+            dice6.classList.add('stop');
 
             // 固定された回転角度を設定（0, 3, 6が表示されるように）
-            // ここではサイコロ0が前面に0、サイコロ3が前面に3、サイコロ6が前面に6を表示するように回転を調整
+            // ここではサイコロ0がfrontに0、サイコロ3がfrontに3、サイコロ6がfrontに6を表示するように回転を調整
             dice0.style.transform = 'rotateX(0deg) rotateY(0deg)';
             dice3.style.transform = 'rotateX(0deg) rotateY(180deg)';
             dice6.style.transform = 'rotateX(0deg) rotateY(90deg)';
@@ -236,7 +242,7 @@
         dice6.addEventListener('click', stopDice);
 
         // 自動的に停止させる場合（ユーザーがタップしなくても）
-        // setTimeout(stopDice, 5000); // 5秒後に自動停止（必要に応じて調整）
+        // setTimeout(stopDice, 5000); // 5秒後に停止（必要に応じて調整）
     </script>
 
 </body>
