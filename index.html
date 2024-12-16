@@ -108,6 +108,30 @@
         .top    { transform: rotateX(90deg) translateZ(50px); }
         .bottom { transform: rotateX(-90deg) translateZ(50px); }
 
+        /* サイコロ0の回転クラス */
+        .dice0-face0 { transform: rotateX(0deg) rotateY(0deg); }
+        .dice0-face3 { transform: rotateX(0deg) rotateY(180deg); }
+        .dice0-face6 { transform: rotateX(0deg) rotateY(90deg); }
+        .dice0-face1 { transform: rotateX(0deg) rotateY(-90deg); }
+        .dice0-face2 { transform: rotateX(90deg) rotateY(0deg); }
+        .dice0-face5 { transform: rotateX(-90deg) rotateY(0deg); }
+
+        /* サイコロ3の回転クラス */
+        .dice3-face6 { transform: rotateX(0deg) rotateY(0deg); }
+        .dice3-face3 { transform: rotateX(0deg) rotateY(180deg); }
+        .dice3-face0 { transform: rotateX(0deg) rotateY(90deg); }
+        .dice3-face1 { transform: rotateX(0deg) rotateY(-90deg); }
+        .dice3-face2 { transform: rotateX(90deg) rotateY(0deg); }
+        .dice3-face5 { transform: rotateX(-90deg) rotateY(0deg); }
+
+        /* サイコロ6の回転クラス */
+        .dice6-face1 { transform: rotateX(0deg) rotateY(0deg); }
+        .dice6-face0 { transform: rotateX(0deg) rotateY(180deg); }
+        .dice6-face3 { transform: rotateX(0deg) rotateY(90deg); }
+        .dice6-face6 { transform: rotateX(0deg) rotateY(-90deg); }
+        .dice6-face2 { transform: rotateX(90deg) rotateY(0deg); }
+        .dice6-face5 { transform: rotateX(-90deg) rotateY(0deg); }
+
         /* 画像のスタイル */
         .flash-image {
             position: absolute;
@@ -221,21 +245,53 @@
         let isRolling = false;
         let isSuccess = false;
 
+        // サイコロごとの回転クラス
+        const rotationClasses = {
+            'dice0': {
+                '0': 'dice0-face0',
+                '3': 'dice0-face3',
+                '6': 'dice0-face6',
+                '1': 'dice0-face1',
+                '2': 'dice0-face2',
+                '5': 'dice0-face5'
+            },
+            'dice3': {
+                '6': 'dice3-face6',
+                '3': 'dice3-face3',
+                '0': 'dice3-face0',
+                '1': 'dice3-face1',
+                '2': 'dice3-face2',
+                '5': 'dice3-face5'
+            },
+            'dice6': {
+                '1': 'dice6-face1',
+                '0': 'dice6-face0',
+                '3': 'dice6-face3',
+                '6': 'dice6-face6',
+                '2': 'dice6-face2',
+                '5': 'dice6-face5'
+            }
+        };
+
         // サイコロを停止する関数
         function stopDice(dice, number) {
             dice.classList.add('stop');
-            // 固定された回転角度を設定（frontに指定の数字が表示されるように）
-            if (number === '0') {
-                dice.style.transform = 'rotateX(0deg) rotateY(0deg)';
-            } else if (number === '3') {
-                dice.style.transform = 'rotateX(0deg) rotateY(180deg)';
-            } else if (number === '6') {
-                dice.style.transform = 'rotateX(0deg) rotateY(90deg)';
+
+            // 既存の回転クラスを削除
+            const diceId = dice.id;
+            for (let key in rotationClasses[diceId]) {
+                dice.classList.remove(rotationClasses[diceId][key]);
+            }
+
+            // 新しい回転クラスを追加
+            const newClass = rotationClasses[diceId][number];
+            if (newClass) {
+                dice.classList.add(newClass);
             } else {
-                // ランダムな回転角度を設定
-                const randomX = Math.floor(Math.random() * 360);
-                const randomY = Math.floor(Math.random() * 360);
-                dice.style.transform = `rotateX(${randomX}deg) rotateY(${randomY}deg)`;
+                // 万が一指定された数字が存在しない場合、ランダムに設定
+                const randomKeys = Object.keys(rotationClasses[diceId]);
+                const randomKey = randomKeys[Math.floor(Math.random() * randomKeys.length)];
+                dice.classList.add(rotationClasses[diceId][randomKey]);
             }
         }
 
@@ -264,6 +320,10 @@
         function resetDice() {
             diceOrder.forEach(dice => {
                 dice.classList.remove('stop');
+                const diceId = dice.id;
+                for (let key in rotationClasses[diceId]) {
+                    dice.classList.remove(rotationClasses[diceId][key]);
+                }
                 dice.style.transform = 'rotateX(0deg) rotateY(0deg)';
                 // サイコロの回転アニメーションを再開
                 dice.classList.remove('stop');
@@ -288,33 +348,29 @@
             }
 
             const dice = diceOrder[currentStopIndex];
-            const desiredNumber = isSuccess ? desiredNumbers[currentStopIndex] : null;
+            const diceId = dice.id;
+            let desiredNumber = null;
 
             if (isSuccess) {
-                // 成功の場合、指定の数字を設定
-                stopDice(dice, desiredNumber);
-                // 次のサイコロに進む
-                currentStopIndex++;
-                isRolling = false;
-
-                // 全てのサイコロが停止したら結果をチェック
-                if (currentStopIndex === diceOrder.length) {
-                    checkResult();
-                }
+                desiredNumber = desiredNumbers[currentStopIndex];
             } else {
-                // 失敗の場合、ランダムな数字を設定
-                const randomNumber = Math.floor(Math.random() * 7); // 0から6のランダムな数字
-                stopDice(dice, randomNumber.toString());
-                // 数字を表示
-                dice.querySelector('.front').textContent = randomNumber;
-                // 次のサイコロに進む
-                currentStopIndex++;
-                isRolling = false;
+                desiredNumber = Math.floor(Math.random() * 7).toString(); // 0から6のランダムな数字
+            }
 
-                // 全てのサイコロが停止したら結果をチェック
-                if (currentStopIndex === diceOrder.length) {
-                    checkResult();
-                }
+            // 数字を設定
+            const frontFace = dice.querySelector('.front');
+            frontFace.textContent = desiredNumber;
+
+            // サイコロを停止
+            stopDice(dice, desiredNumber);
+
+            currentStopIndex++;
+
+            // 全てのサイコロが停止したら結果をチェック
+            if (currentStopIndex === diceOrder.length) {
+                setTimeout(checkResult, 1000); // 1秒後に判定（アニメーションが終了するまで待つ）
+            } else {
+                isRolling = false;
             }
         }
 
