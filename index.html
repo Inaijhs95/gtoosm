@@ -369,7 +369,7 @@
 
             // 全てのサイコロが停止したら結果をチェック
             if (currentStopIndex === diceOrder.length) {
-                setTimeout(checkResult, 500); // 0.5秒後に判定（アニメーションが終了するまで待つ）
+                setTimeout(checkResult, 1000); // 1秒後に判定（アニメーションが終了するまで待つ）
             } else {
                 isRolling = false;
             }
