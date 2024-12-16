@@ -72,6 +72,7 @@
             border-radius: 15px; /* 角を丸める */
             animation: rotateDice 0.05s linear infinite; /* 超高速回転 */
             z-index: 1;
+            transition: transform 1s;
         }
 
         .dice.stop {
@@ -145,6 +146,8 @@
                 max-height: 150px;
                 bottom: 5%;
                 right: 5%;
+                width: 30vw;
+                height: auto;
             }
         }
     </style>
@@ -215,6 +218,7 @@
         const diceOrder = [dice0, dice3, dice6];
         const desiredNumbers = ['0', '3', '6'];
         let currentStopIndex = 0;
+        let isRolling = false;
 
         // サイコロを停止する関数
         function stopDice(dice, number) {
@@ -226,24 +230,76 @@
                 dice.style.transform = 'rotateX(0deg) rotateY(180deg)';
             } else if (number === '6') {
                 dice.style.transform = 'rotateX(0deg) rotateY(90deg)';
+            } else {
+                // ランダムな回転角度を設定
+                const randomX = Math.floor(Math.random() * 360);
+                const randomY = Math.floor(Math.random() * 360);
+                dice.style.transform = `rotateX(${randomX}deg) rotateY(${randomY}deg)`;
             }
         }
 
-        // ユーザーがサイコロをクリックしたときの処理
-        function handleDiceClick(event) {
-            if (currentStopIndex >= diceOrder.length) return; // すでに全て停止
-            const dice = diceOrder[currentStopIndex];
-            const desiredNumber = desiredNumbers[currentStopIndex];
-            if (dice !== event.currentTarget) return; // 順番を守る
-            stopDice(dice, desiredNumber);
-            currentStopIndex++;
-            if (currentStopIndex === diceOrder.length) {
-                // 最後のサイコロが停止したら画像を表示して点滅後リダイレクト
+        // 結果をチェックする関数
+        function checkResult() {
+            const results = diceOrder.map(dice => {
+                return dice.querySelector('.front').textContent;
+            });
+
+            // 0-3-6の順番かどうかを確認
+            const isSuccess = results.join('') === '036';
+
+            if (isSuccess) {
                 flashImage.style.display = 'block';
                 setTimeout(() => {
                     window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
                 }, 2000); // 2秒後にリダイレクト
+            } else {
+                alert('結果が 0-3-6 ではありません。もう一度挑戦してください！');
+                resetDice();
             }
+            isRolling = false;
+        }
+
+        // サイコロをロールする関数
+        function rollDice() {
+            if (isRolling) return;
+            isRolling = true;
+
+            // 10%の確率で成功（0-3-6）
+            const successChance = Math.random();
+            if (successChance <= 0.1) {
+                // 成功: 各サイコロを0,3,6に設定
+                diceOrder.forEach((dice, index) => {
+                    stopDice(dice, desiredNumbers[index]);
+                });
+                setTimeout(checkResult, 1000); // アニメーション後に判定
+            } else {
+                // 失敗: ランダムな目を設定
+                diceOrder.forEach(dice => {
+                    const randomNumber = Math.floor(Math.random() * 7); // 0から6のランダムな数字
+                    // 数字を表示
+                    const frontFace = dice.querySelector('.front');
+                    frontFace.textContent = randomNumber;
+                    stopDice(dice, randomNumber.toString());
+                });
+                setTimeout(checkResult, 1000); // アニメーション後に判定
+            }
+        }
+
+        // サイコロをリセットする関数
+        function resetDice() {
+            diceOrder.forEach(dice => {
+                dice.classList.remove('stop');
+                dice.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                // サイコロの回転アニメーションを再開
+                dice.classList.remove('stop');
+            });
+            currentStopIndex = 0;
+        }
+
+        // ユーザーがサイコロをクリックしたときの処理
+        function handleDiceClick(event) {
+            if (isRolling) return; // ロール中は無効化
+            rollDice();
         }
 
         // サイコロにクリックイベントを追加
