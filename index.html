@@ -219,11 +219,12 @@
         const desiredNumbers = ['0', '3', '6'];
         let currentStopIndex = 0;
         let isRolling = false;
+        let isSuccess = false;
 
         // サイコロを停止する関数
         function stopDice(dice, number) {
             dice.classList.add('stop');
-            // 固定された回転角度を設定（frontに0,3,6が表示されるように）
+            // 固定された回転角度を設定（frontに指定の数字が表示されるように）
             if (number === '0') {
                 dice.style.transform = 'rotateX(0deg) rotateY(0deg)';
             } else if (number === '3') {
@@ -245,9 +246,9 @@
             });
 
             // 0-3-6の順番かどうかを確認
-            const isSuccess = results.join('') === '036';
+            const isSuccessResult = results.join('') === '036';
 
-            if (isSuccess) {
+            if (isSuccess && isSuccessResult) {
                 flashImage.style.display = 'block';
                 setTimeout(() => {
                     window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
@@ -259,32 +260,6 @@
             isRolling = false;
         }
 
-        // サイコロをロールする関数
-        function rollDice() {
-            if (isRolling) return;
-            isRolling = true;
-
-            // 10%の確率で成功（0-3-6）
-            const successChance = Math.random();
-            if (successChance <= 0.1) {
-                // 成功: 各サイコロを0,3,6に設定
-                diceOrder.forEach((dice, index) => {
-                    stopDice(dice, desiredNumbers[index]);
-                });
-                setTimeout(checkResult, 1000); // アニメーション後に判定
-            } else {
-                // 失敗: ランダムな目を設定
-                diceOrder.forEach(dice => {
-                    const randomNumber = Math.floor(Math.random() * 7); // 0から6のランダムな数字
-                    // 数字を表示
-                    const frontFace = dice.querySelector('.front');
-                    frontFace.textContent = randomNumber;
-                    stopDice(dice, randomNumber.toString());
-                });
-                setTimeout(checkResult, 1000); // アニメーション後に判定
-            }
-        }
-
         // サイコロをリセットする関数
         function resetDice() {
             diceOrder.forEach(dice => {
@@ -294,18 +269,71 @@
                 dice.classList.remove('stop');
             });
             currentStopIndex = 0;
+            isSuccess = false;
+        }
+
+        // サイコロをロールする関数
+        function rollDice() {
+            if (isRolling || currentStopIndex >= diceOrder.length) return;
+            isRolling = true;
+
+            // 最初のクリックで成功か失敗かを決定
+            if (currentStopIndex === 0) {
+                const successChance = Math.random();
+                if (successChance <= 0.1) {
+                    isSuccess = true;
+                } else {
+                    isSuccess = false;
+                }
+            }
+
+            const dice = diceOrder[currentStopIndex];
+            const desiredNumber = isSuccess ? desiredNumbers[currentStopIndex] : null;
+
+            if (isSuccess) {
+                // 成功の場合、指定の数字を設定
+                stopDice(dice, desiredNumber);
+                // 次のサイコロに進む
+                currentStopIndex++;
+                isRolling = false;
+
+                // 全てのサイコロが停止したら結果をチェック
+                if (currentStopIndex === diceOrder.length) {
+                    checkResult();
+                }
+            } else {
+                // 失敗の場合、ランダムな数字を設定
+                const randomNumber = Math.floor(Math.random() * 7); // 0から6のランダムな数字
+                stopDice(dice, randomNumber.toString());
+                // 数字を表示
+                dice.querySelector('.front').textContent = randomNumber;
+                // 次のサイコロに進む
+                currentStopIndex++;
+                isRolling = false;
+
+                // 全てのサイコロが停止したら結果をチェック
+                if (currentStopIndex === diceOrder.length) {
+                    checkResult();
+                }
+            }
         }
 
         // ユーザーがサイコロをクリックしたときの処理
         function handleDiceClick(event) {
             if (isRolling) return; // ロール中は無効化
+            const clickedDice = event.currentTarget;
+            const expectedDice = diceOrder[currentStopIndex];
+            if (clickedDice !== expectedDice) {
+                alert('順番通りにサイコロをクリックしてください！');
+                return;
+            }
             rollDice();
         }
 
         // サイコロにクリックイベントを追加
-        dice0.addEventListener('click', handleDiceClick);
-        dice3.addEventListener('click', handleDiceClick);
-        dice6.addEventListener('click', handleDiceClick);
+        diceOrder.forEach(dice => {
+            dice.addEventListener('click', handleDiceClick);
+        });
     </script>
 
 </body>
