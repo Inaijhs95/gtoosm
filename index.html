@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>スロットゲーム</title>
-  <!-- スマホ対応 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* ベースリセット */
     * {
       box-sizing: border-box;
-      margin: 0;
+      margin: 0; 
       padding: 0;
     }
     body {
@@ -24,7 +23,7 @@
 
     /* スロット台外枠 */
     .slot-machine {
-      width: 350px;
+      width: 360px;
       background: #222;
       border: 6px solid #000;
       border-radius: 10px;
@@ -60,77 +59,76 @@
       margin: 5px auto 0;
     }
 
-    /* リール全体 */
+    /* リール本体部分 */
     .reels {
       display: flex;
       justify-content: center;
-      align-items: flex-start;
       padding: 15px;
       background: linear-gradient(to bottom, #555, #333);
     }
 
     /* 各リール */
     .reel {
-      position: relative;
-      width: 70px;
-      height: 100px; /* リール表示枠の高さ */
+      width: 60px;
+      height: 80px; /* 見える範囲 */
       margin: 0 5px;
-      overflow: hidden; /* はみ出た部分を隠す */
+      overflow: hidden;
       border-radius: 8px;
-      background: #222;
-      box-shadow: inset 0 3px 10px rgba(0,0,0,0.5);
+      background: #000;
+      position: relative;
     }
-    /* 流れてくる数字を配置するコンテナ */
-    .reel-inner {
-      position: absolute;
+
+    /*
+      リール背景に "0～7" を縦にずらーっと並べた疑似"スプライト"を適用。
+      高速スクロールで数字を判別できないレベルの速度にする。
+    */
+    .reel-content {
       width: 100%;
+      height: 800px; /* たくさんの数字を縦に配置 */
+      background: linear-gradient(#fff, #fff); /* デフォルト */
+      position: absolute;
       top: 0;
       left: 0;
-    }
-    /* 数字アイテム */
-    .reel-number {
-      width: 100%;
-      height: 40px;
-      line-height: 40px;
-      text-align: center;
-      font-size: 1.4em;
-      background: #fff;
-      color: #000;
-      border-bottom: 1px solid #aaa;
+      animation: spin 0.02s linear infinite; 
+      /* 
+         spinアニメーションは 
+         0.02秒(=20ms)毎に background-position-y を段階的に加算していくイメージ 
+      */
     }
 
-    /* コントロール部分 */
+    /* このアニメーション自体のフレーム毎にJSでbackgroundを動かしてもいいが、
+       CSSだけで数値をアニメさせるにはkeyframesが必要。ただし、JS制御の方がリアル。
+       ここでは簡易的に perspective trick としてkeyframesは使わず setInterval する手も。 
+       今回は簡易的に "1フレーム=0.02s" で再始動... という擬似マルチフレーム的に扱う。
+    */
+
+    /* コントロール部(レバー+ストップボタン)を横1列に */
     .controls {
       background: #222;
-      padding: 15px 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .control-row {
+      padding: 10px;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 10px;
-      margin-bottom: 10px;
     }
 
-    /* レバー：シルバー棒 + 黒い球が下がるイメージ */
+    /* レバー：シルバー棒 + 黒い球が動くイメージ */
     .lever-container {
       width: 60px;
-      height: 90px;
+      height: 80px;
       position: relative;
     }
-    /* シルバーの棒（固定） */
+    /* シルバー棒(固定) */
     .lever-shaft {
       position: absolute;
       left: 28px;
       top: 0;
       width: 4px;
-      height: 90px;
+      height: 80px;
       background: linear-gradient(#bbb, #777);
       border-radius: 2px;
     }
-    /* 黒い球（押し込むイメージ） */
+    /* 黒い球 */
     .lever-ball {
       position: absolute;
       left: 10px;
@@ -144,9 +142,8 @@
       transition: transform 0.2s ease;
       user-select: none;
     }
-    /* 押し下げ時：ballをshaftの下へ */
     .lever-ball:active {
-      transform: translateY(35px);
+      transform: translateY(30px);
     }
 
     /* ストップボタン(赤) */
@@ -170,13 +167,12 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
-
   </style>
 </head>
 <body>
 
 <div class="slot-machine">
-  <!-- ディスプレイ部 -->
+  <!-- 上部ディスプレイ -->
   <div class="slot-display">
     <h2>スロットゲーム</h2>
     <div id="spinCountText"></div>
@@ -187,40 +183,35 @@
   <!-- リール -->
   <div class="reels">
     <div class="reel" id="reel1">
-      <div class="reel-inner" id="reelInner1"></div>
+      <div class="reel-content" id="reelContent1"></div>
     </div>
     <div class="reel" id="reel2">
-      <div class="reel-inner" id="reelInner2"></div>
+      <div class="reel-content" id="reelContent2"></div>
     </div>
     <div class="reel" id="reel3">
-      <div class="reel-inner" id="reelInner3"></div>
+      <div class="reel-content" id="reelContent3"></div>
     </div>
   </div>
 
-  <!-- コントロール部 -->
+  <!-- コントロール部（1行） -->
   <div class="controls">
-    <div class="control-row">
-      <!-- レバー -->
-      <div class="lever-container">
-        <div class="lever-shaft"></div>
-        <div class="lever-ball" id="leverBall"></div>
-      </div>
-      <!-- ストップ1 -->
-      <button class="stop-btn" id="stop1" disabled>STOP<br>1</button>
+    <!-- レバー -->
+    <div class="lever-container">
+      <div class="lever-shaft"></div>
+      <div class="lever-ball" id="leverBall"></div>
     </div>
-    <div class="control-row">
-      <!-- ストップ2 -->
-      <button class="stop-btn" id="stop2" disabled>STOP<br>2</button>
-      <!-- ストップ3 -->
-      <button class="stop-btn" id="stop3" disabled>STOP<br>3</button>
-    </div>
+
+    <!-- STOPボタン3つ -->
+    <button class="stop-btn" id="stop1" disabled>STOP<br>1</button>
+    <button class="stop-btn" id="stop2" disabled>STOP<br>2</button>
+    <button class="stop-btn" id="stop3" disabled>STOP<br>3</button>
   </div>
 </div>
 
 <script>
   /* --- DOM取得 --- */
-  const displayMessage = document.getElementById('displayMessage');
   const spinCountText = document.getElementById('spinCountText');
+  const displayMessage = document.getElementById('displayMessage');
   const winImage = document.getElementById('winImage');
 
   const leverBall = document.getElementById('leverBall');
@@ -228,137 +219,133 @@
   const stopBtn2 = document.getElementById('stop2');
   const stopBtn3 = document.getElementById('stop3');
 
-  const reelInner1 = document.getElementById('reelInner1');
-  const reelInner2 = document.getElementById('reelInner2');
-  const reelInner3 = document.getElementById('reelInner3');
-
-  // リールのスクロール管理用
-  let reelIntervals = [null, null, null];
-  let isSpinning = [false, false, false]; 
-  // 最終結果(数字)を入れる
-  let finalResults = [0,0,0];
+  const reelContent1 = document.getElementById('reelContent1');
+  const reelContent2 = document.getElementById('reelContent2');
+  const reelContent3 = document.getElementById('reelContent3');
 
   // 回転数をローカルストレージで管理
   let spinCount = parseInt(localStorage.getItem('slotSpinCount') || '0', 10);
   updateSpinCountDisplay();
 
-  function updateSpinCountDisplay(){
+  function updateSpinCountDisplay() {
     spinCountText.textContent = `回転数：${spinCount}`;
   }
 
-  /* --- レバーを押して抽選開始 --- */
+  // リールが回転中か否か
+  let isSpinning = [false, false, false];
+  // リールのアニメーション用
+  let reelPos = [0, 0, 0];      // background-position-y の代わりに使う変数
+  let reelTimer = [null, null, null]; // setInterval管理
+
+  // 最終結果
+  let finalResults = [0, 0, 0];
+
+  // -----------------------------------
+  //   レバーを押したとき (抽選 + スタート)
+  // -----------------------------------
   leverBall.addEventListener('click', () => {
-    // まだどこかがスピン中なら無効
+    // まだどこかが回転中なら何もしない
     if (isSpinning.some(sp => sp)) return;
 
-    // 回転数更新
+    // 回転数カウントアップ
     spinCount++;
     localStorage.setItem('slotSpinCount', spinCount);
     updateSpinCountDisplay();
 
-    // メッセージ＆画像リセット
+    // メッセージ＆大当たり画像リセット
     displayMessage.textContent = "";
     winImage.style.display = "none";
 
-    // 抽選(最終結果を決定)
-    // 50%で 0,3,6 / 50%で ランダム
-    if(Math.random() < 0.5){
-      finalResults = [0,3,6];
+    // 抽選 (50%で 0,3,6 か、それ以外はランダム)
+    if (Math.random() < 0.5) {
+      finalResults = [0, 3, 6];
     } else {
       finalResults = [
-        Math.floor(Math.random()*8),
-        Math.floor(Math.random()*8),
-        Math.floor(Math.random()*8),
+        Math.floor(Math.random() * 8),
+        Math.floor(Math.random() * 8),
+        Math.floor(Math.random() * 8)
       ];
     }
 
-    // リール回転スタート
-    for(let i=0; i<3; i++){
+    // リール回転開始
+    for (let i = 0; i < 3; i++) {
       startReel(i);
     }
+
+    // STOPボタン使用可
     stopBtn1.disabled = false;
     stopBtn2.disabled = false;
     stopBtn3.disabled = false;
   });
 
-  /* --- リール回転開始（上→下スクロール）--- */
-  function startReel(idx){
+  // -----------------------------------
+  //   リール回転開始
+  // -----------------------------------
+  function startReel(idx) {
     isSpinning[idx] = true;
-    const reelInner = [reelInner1, reelInner2, reelInner3][idx];
-
-    // 既存DOMクリア
-    reelInner.innerHTML = '';
-    // 毎フレーム数字を追加して下方向に動かす
-    reelIntervals[idx] = setInterval(() => {
-      const num = Math.floor(Math.random()*8);
-      const div = document.createElement('div');
-      div.className = 'reel-number';
-      div.textContent = num;
-
-      // 初期位置(最上部: -40pxくらいに置く)
-      div.style.position = 'absolute';
-      div.style.top = '-40px';
-
-      reelInner.appendChild(div);
-
-      // 数字要素をアニメ風に落としていく
-      const fallDuration = 800; // 下に落ちるのにかける時間(ms)
-      const startTime = performance.now();
-
-      function animate(time){
-        const elapsed = time - startTime;
-        const progress = elapsed / fallDuration;
-        // reelの可視領域(100px)＋数字高さ(40px)=140px分下に落ちる想定
-        const distance = 140 * progress;
-        div.style.top = (-40 + distance) + 'px';
-        if(progress < 1 && isSpinning[idx]){
-          requestAnimationFrame(animate);
-        } else {
-          // 画面外に出たら削除
-          if(div.offsetTop > 100){
-            reelInner.removeChild(div);
-          }
-        }
+    // リール用の位置を0に
+    reelPos[idx] = 0;
+    // 既にあるCSS "animation" を生かすために class を付け外ししてもOKだが、
+    // ここでは JS で background-position-y を更新する方式に変えてみる。
+    // ものすごく速い速度で位置を下げて再度上に戻すようなイメージ
+    reelTimer[idx] = setInterval(() => {
+      // 高速で下へ流して見えなくする
+      reelPos[idx] += 40; 
+      // 大きな値になりすぎないようモジュロ演算など
+      if (reelPos[idx] > 800) {
+        reelPos[idx] = 0;
       }
-      requestAnimationFrame(animate);
-    }, 150);
+      // background に 8行 (0~7) が詰まったイメージがあると仮定し 
+      // 位置を下げる。(今回は実際は単色だけどイメージとして)
+      // reelContentX の transform で瞬時に位置変更
+      const reelEl = [reelContent1, reelContent2, reelContent3][idx];
+      reelEl.style.transform = `translateY(${-reelPos[idx]}px)`;
+    }, 20); // 20ms間隔(=50fps相当)
   }
 
-  /* --- リール停止 --- */
-  stopBtn1.addEventListener('click', ()=> stopReel(0, stopBtn1));
-  stopBtn2.addEventListener('click', ()=> stopReel(1, stopBtn2));
-  stopBtn3.addEventListener('click', ()=> stopReel(2, stopBtn3));
+  // -----------------------------------
+  //   リール停止
+  // -----------------------------------
+  stopBtn1.addEventListener('click', () => stopReel(0));
+  stopBtn2.addEventListener('click', () => stopReel(1));
+  stopBtn3.addEventListener('click', () => stopReel(2));
 
-  function stopReel(idx, btn){
-    if(!isSpinning[idx]) return;
-    clearInterval(reelIntervals[idx]);
+  function stopReel(idx) {
+    if (!isSpinning[idx]) return;
+    clearInterval(reelTimer[idx]);
     isSpinning[idx] = false;
+    // ボタンも押せなくする
+    const btn = [stopBtn1, stopBtn2, stopBtn3][idx];
     btn.disabled = true;
 
-    // リールのスクロールを一旦止めるために、setTimeoutで最後に数字を確定表示
-    setTimeout(() => {
-      const reelInner = [reelInner1, reelInner2, reelInner3][idx];
-      reelInner.innerHTML = ''; 
-      // 最終結果を表示
-      const div = document.createElement('div');
-      div.className = 'reel-number';
-      div.style.position = 'static'; // 通常位置で配置
-      div.style.top = '0';
-      div.textContent = finalResults[idx];
-      reelInner.appendChild(div);
+    // 最終結果にあわせて「見える位置」にする
+    // 0～7 行あるうち、 finalResults[idx] 行目が80pxの枠内で見えるように
+    // 1行=80px / 8=10pxではないため、ここで一旦計算例を固定: 1数字あたり80px/8=10px でも良いが
+    // 簡易的に finalResults[idx]*80/8= finalResults[idx]*10 で位置をずらす、など。
+    // ここでは "1数字80px" と仮定し finalResults[idx]分だけズラす演出に変える。
+    // あるいは "1数字高さ=80/1=80px" だと8個分で640pxになる計算。このあたりはデザイン次第。
+    // 例として finalResults[idx] * 80 px 下げる(0→0px,1→80px,...)
+    // ただし、実際はリール高さが80pxで1数字しか見えない想定なので
+    // finalResults[idx] 行目がちょうど見える  = - (finalResults[idx]*80)
+    // というtransform指定にしましょう。
+    const reelEl = [reelContent1, reelContent2, reelContent3][idx];
+    const finalVal = finalResults[idx];
+    // 1数字の高さ = 80px で考えてみる
+    reelEl.style.transform = `translateY(${- finalVal * 80}px)`;
 
-      // 全リール止まったか判定
-      if(isSpinning.every(sp => !sp)){
-        checkResult();
-      }
-    }, 300);
+    // 全リール停止したかチェック
+    if (!isSpinning[0] && !isSpinning[1] && !isSpinning[2]) {
+      checkResult();
+    }
   }
 
-  /* --- 結果判定 --- */
-  function checkResult(){
-    const [r1, r2, r3] = finalResults;
-    // もし最終結果が 0,3,6 なら100%大当たり
-    if(r1===0 && r2===3 && r3===6){
+  // -----------------------------------
+  //   結果判定
+  // -----------------------------------
+  function checkResult() {
+    const [a, b, c] = finalResults;
+    // 最終結果が0,3,6なら大当たり
+    if(a===0 && b===3 && c===6) {
       showJackpot();
     } else {
       // ハズレ
@@ -366,14 +353,22 @@
     }
   }
 
-  /* --- 大当たり演出 --- */
-  function showJackpot(){
+  // -----------------------------------
+  //   大当たり
+  // -----------------------------------
+  function showJackpot() {
     displayMessage.textContent = "大当たり！！";
     winImage.style.display = "block";
+
     // 回転数リセット
     spinCount = 0;
     localStorage.setItem('slotSpinCount', spinCount);
     updateSpinCountDisplay();
+
+    // 2秒後にリンクへ飛ぶ
+    setTimeout(() => {
+      window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
+    }, 2000);
   }
 </script>
 </body>
