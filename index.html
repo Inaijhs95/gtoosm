@@ -6,214 +6,211 @@
     <title>03.6％の奇跡</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-   /* 全体のスタイル */
-body {
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    font-family: 'Roboto', sans-serif;
-    color: #ffffff;
-    overflow: hidden;
-    position: relative;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* 数学的な背景シンボル */
-.symbol {
-    position: absolute;
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.3);
-    user-select: none;
-    pointer-events: none;
-    animation: float 15s linear infinite;
-}
-
-@keyframes float {
-    0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.3;
-    }
-    50% {
-        transform: translateY(-50px) rotate(180deg);
-        opacity: 0.6;
-    }
-    100% {
-        transform: translateY(0) rotate(360deg);
-        opacity: 0.3;
-    }
-}
-
-/* コンテンツのスタイル */
-.content {
-    text-align: center;
-    z-index: 1;
-}
-
-/* サイコロのスタイル */
-.dice-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    perspective: 1200px; /* パースペクティブを強調 */
-    margin-bottom: 40px;
-}
-
-/* サイコロのスタイル */
-.dice {
-    width: 100px;
-    height: 100px;
-    position: relative;
-    transform-style: preserve-3d;
-    transform: rotateX(0deg) rotateY(0deg);
-    cursor: pointer;
-    border-radius: 10px;
-    transition: transform 0.5s, box-shadow 0.5s;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-
-.dice.stop {
-    animation: none;
-    transform: rotateX(0deg) rotateY(0deg) scale(1.05); /* 停止時にわずかに拡大 */
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7); /* シャドウを強調 */
-}
-
-/* アニメーションのキー設定 */
-@keyframes rotateDice {
-    0% { transform: rotateX(0deg) rotateY(0deg); }
-    100% { transform: rotateX(360deg) rotateY(360deg); }
-}
-
-/* サイコロの各面 */
-.face {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(135deg, #ffffff, #cccccc);
-    border: 1px solid #000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2em;
-    font-weight: bold;
-    color: #000;
-    backface-visibility: hidden;
-}
-
-
-/* 各面の配置 */
-.front  { transform: translateZ(50px); }
-.back   { transform: rotateY(180deg) translateZ(50px); }
-.right  { transform: rotateY(90deg) translateZ(50px); }
-.left   { transform: rotateY(-90deg) translateZ(50px); }
-.top    { transform: rotateX(90deg) translateZ(50px); }
-.bottom { transform: rotateX(-90deg) translateZ(50px); }
-
-/* サイコロ0の回転クラス */
-.dice0-face0 { transform: rotateX(0deg) rotateY(0deg); }
-.dice0-face3 { transform: rotateX(0deg) rotateY(180deg); }
-.dice0-face6 { transform: rotateX(0deg) rotateY(90deg); }
-.dice0-face1 { transform: rotateX(0deg) rotateY(-90deg); }
-.dice0-face2 { transform: rotateX(90deg) rotateY(0deg); }
-.dice0-face5 { transform: rotateX(-90deg) rotateY(0deg); }
-
-/* サイコロ3の回転クラス */
-.dice3-face6 { transform: rotateX(0deg) rotateY(0deg); }
-.dice3-face3 { transform: rotateX(0deg) rotateY(180deg); }
-.dice3-face0 { transform: rotateX(0deg) rotateY(90deg); }
-.dice3-face1 { transform: rotateX(0deg) rotateY(-90deg); }
-.dice3-face2 { transform: rotateX(90deg) rotateY(0deg); }
-.dice3-face5 { transform: rotateX(-90deg) rotateY(0deg); }
-
-/* サイコロ6の回転クラス */
-.dice6-face1 { transform: rotateX(0deg) rotateY(0deg); }
-.dice6-face0 { transform: rotateX(0deg) rotateY(180deg); }
-.dice6-face3 { transform: rotateX(0deg) rotateY(90deg); }
-.dice6-face6 { transform: rotateX(0deg) rotateY(-90deg); }
-.dice6-face2 { transform: rotateX(90deg) rotateY(0deg); }
-.dice6-face5 { transform: rotateX(-90deg) rotateY(0deg); }
-
-/* 画像のスタイル */
-.flash-image {
-    position: absolute;
-    bottom: 30%;
-    right: 10%;
-    opacity: 0.9;
-    display: none;
-    animation: blink 0.2s infinite;
-    z-index: 2; /* 画像を最前面に */
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 10px;
-}
-
-@keyframes blink {
-    0%, 50% { opacity: 0.2; }
-    25%, 75% { opacity: 1; }
-}
-
-/* レスポンシブデザイン */
-@media (max-width: 600px) {
-    .dice-container {
-        gap: 10px;
-    }
-    .dice {
-        width: 70px;
-        height: 70px;
-    }
-    .face {
-        width: 70px;
-        height: 70px;
-        font-size: 1.5em;
-    }
-    .flash-image {
-        max-width: 150px;
-        max-height: 150px;
-        bottom: 40%;
-        right: 2.5%;
-        width: 30vw;
-        height: auto;
-    }
-}
-
-/* 追加: ホバー効果 */
-.dice:hover {
-    transform: scale(1.05) rotateX(5deg) rotateY(5deg); /* わずかに拡大し、角度を変更 */
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7); /* シャドウを強化 */
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-/* 追加: 各面に異なるグラデーションを適用 */
-.front  { 
-    transform: rotateY(0deg) translateZ(50px); 
-    background: linear-gradient(135deg, #ffffff, #e0e0e0);
-}
-.back   { 
-    transform: rotateY(180deg) translateZ(50px); 
-    background: linear-gradient(135deg, #f0f0f0, #d0d0d0);
-}
-.right  { 
-    transform: rotateY(90deg) translateZ(50px); 
-    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-}
-.left   { 
-    transform: rotateY(-90deg) translateZ(50px); 
-    background: linear-gradient(135deg, #ffe0b2, #ffcc80);
-}
-.top    { 
-    transform: rotateX(90deg) translateZ(50px); 
-    background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
-}
-.bottom { 
-    transform: rotateX(-90deg) translateZ(50px); 
-    background: linear-gradient(135deg, #ffccbc, #ffab91);
-}
-
-
+        /* 全体のスタイル */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            font-family: 'Roboto', sans-serif;
+            color: #ffffff;
+            overflow: hidden;
+            position: relative;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* 数学的な背景シンボル */
+        .symbol {
+            position: absolute;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.3);
+            user-select: none;
+            pointer-events: none;
+            animation: float 15s linear infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-50px) rotate(180deg);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(0) rotate(360deg);
+                opacity: 0.3;
+            }
+        }
+        
+        /* コンテンツのスタイル */
+        .content {
+            text-align: center;
+            z-index: 1;
+        }
+        
+        /* サイコロのスタイル */
+        .dice-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            perspective: 1200px; /* パースペクティブを強調 */
+            margin-bottom: 40px;
+        }
+        
+        /* サイコロのスタイル */
+        .dice {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(0deg) rotateY(0deg);
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.5s, box-shadow 0.5s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: rotateDice 5s linear infinite; /* アニメーションを追加 */
+        }
+        
+        .dice.stop {
+            animation: none;
+            transform: rotateX(0deg) rotateY(0deg) scale(1.05); /* 停止時にわずかに拡大 */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7); /* シャドウを強調 */
+        }
+        
+        /* アニメーションのキー設定 */
+        @keyframes rotateDice {
+            0% { transform: rotateX(0deg) rotateY(0deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+        
+        /* サイコロの各面 */
+        .face {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #ffffff, #cccccc);
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #000;
+            backface-visibility: hidden;
+        }
+        
+        /* 各面の配置 */
+        .front  { transform: translateZ(50px); }
+        .back   { transform: rotateY(180deg) translateZ(50px); }
+        .right  { transform: rotateY(90deg) translateZ(50px); }
+        .left   { transform: rotateY(-90deg) translateZ(50px); }
+        .top    { transform: rotateX(90deg) translateZ(50px); }
+        .bottom { transform: rotateX(-90deg) translateZ(50px); }
+        
+        /* サイコロ0の回転クラス */
+        .dice0-face0 { transform: rotateX(0deg) rotateY(0deg); }
+        .dice0-face3 { transform: rotateX(0deg) rotateY(180deg); }
+        .dice0-face6 { transform: rotateX(0deg) rotateY(90deg); }
+        .dice0-face1 { transform: rotateX(0deg) rotateY(-90deg); }
+        .dice0-face2 { transform: rotateX(90deg) rotateY(0deg); }
+        .dice0-face5 { transform: rotateX(-90deg) rotateY(0deg); }
+        
+        /* サイコロ3の回転クラス */
+        .dice3-face6 { transform: rotateX(0deg) rotateY(0deg); }
+        .dice3-face3 { transform: rotateX(0deg) rotateY(180deg); }
+        .dice3-face0 { transform: rotateX(0deg) rotateY(90deg); }
+        .dice3-face1 { transform: rotateX(0deg) rotateY(-90deg); }
+        .dice3-face2 { transform: rotateX(90deg) rotateY(0deg); }
+        .dice3-face5 { transform: rotateX(-90deg) rotateY(0deg); }
+        
+        /* サイコロ6の回転クラス */
+        .dice6-face1 { transform: rotateX(0deg) rotateY(0deg); }
+        .dice6-face0 { transform: rotateX(0deg) rotateY(180deg); }
+        .dice6-face3 { transform: rotateX(0deg) rotateY(90deg); }
+        .dice6-face6 { transform: rotateX(0deg) rotateY(-90deg); }
+        .dice6-face2 { transform: rotateX(90deg) rotateY(0deg); }
+        .dice6-face5 { transform: rotateX(-90deg) rotateY(0deg); }
+        
+        /* 画像のスタイル */
+        .flash-image {
+            position: absolute;
+            bottom: 30%;
+            right: 10%;
+            opacity: 0.9;
+            display: none;
+            animation: blink 0.2s infinite;
+            z-index: 2; /* 画像を最前面に */
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 0.2; }
+            25%, 75% { opacity: 1; }
+        }
+        
+        /* レスポンシブデザイン */
+        @media (max-width: 600px) {
+            .dice-container {
+                gap: 10px;
+            }
+            .dice {
+                width: 70px;
+                height: 70px;
+            }
+            .face {
+                width: 70px;
+                height: 70px;
+                font-size: 1.5em;
+            }
+            .flash-image {
+                max-width: 150px;
+                max-height: 150px;
+                bottom: 40%;
+                right: 2.5%;
+                width: 30vw;
+                height: auto;
+            }
+        }
+        
+        /* 追加: ホバー効果 */
+        .dice:hover {
+            transform: scale(1.05) rotateX(5deg) rotateY(5deg); /* わずかに拡大し、角度を変更 */
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7); /* シャドウを強化 */
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        /* 追加: 各面に異なるグラデーションを適用 */
+        .front  { 
+            transform: rotateY(0deg) translateZ(50px); 
+            background: linear-gradient(135deg, #ffffff, #e0e0e0);
+        }
+        .back   { 
+            transform: rotateY(180deg) translateZ(50px); 
+            background: linear-gradient(135deg, #f0f0f0, #d0d0d0);
+        }
+        .right  { 
+            transform: rotateY(90deg) translateZ(50px); 
+            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+        }
+        .left   { 
+            transform: rotateY(-90deg) translateZ(50px); 
+            background: linear-gradient(135deg, #ffe0b2, #ffcc80);
+        }
+        .top    { 
+            transform: rotateX(90deg) translateZ(50px); 
+            background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+        }
+        .bottom { 
+            transform: rotateX(-90deg) translateZ(50px); 
+            background: linear-gradient(135deg, #ffccbc, #ffab91);
+        }
     </style>
 </head>
 <body>
@@ -345,11 +342,11 @@ body {
             const isSuccessResult = results.join('') === '036';
 
             if (isSuccess && isSuccessResult) {
-    flashImage.style.display = 'block';
-    setTimeout(() => {
-        flashImage.style.display = 'none'; // 画像を非表示にする
-        window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
-    }, 2000); // 2秒後にリダイレクト
+                flashImage.style.display = 'block';
+                setTimeout(() => {
+                    flashImage.style.display = 'none'; // 画像を非表示にする
+                    window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
+                }, 2000); // 2秒後にリダイレクト
             } else {
                 alert('なんぼでも挑戦可能！狙うはあの数字？');
                 resetDice();
@@ -381,7 +378,7 @@ body {
             // 最初のクリックで成功か失敗かを決定
             if (currentStopIndex === 0) {
                 const successChance = Math.random();
-                if (successChance <= 0.036) {
+                if (successChance <= 0.036) { // 3.6%の成功確率
                     isSuccess = true;
                 } else {
                     isSuccess = false;
