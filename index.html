@@ -25,86 +25,32 @@
       flex-direction: column;
     }
 
-    /* 数学的な背景シンボル */
-    .symbol {
-      position: absolute;
-      font-size: 24px;
-      color: rgba(255, 255, 255, 0.3);
-      user-select: none;
-      pointer-events: none;
-      animation: float 15s linear infinite;
-    }
-
-    @keyframes float {
-      0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.3;
-      }
-      50% {
-        transform: translateY(-50px) rotate(180deg);
-        opacity: 0.6;
-      }
-      100% {
-        transform: translateY(0) rotate(360deg);
-        opacity: 0.3;
-      }
-    }
-
-    /* コンテンツのスタイル */
+    /* スロットマシンのコンテナ */
     .content {
+      position: relative;
       text-align: center;
       z-index: 1;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
 
-    /* 挑戦回数ディスプレイ */
-    .display-panel {
-      background: #222;
-      border: 4px solid #fff;
-      border-radius: 10px;
-      padding: 10px 20px;
-      margin-bottom: 10px;
-      font-size: 1.2em;
-      position: relative;
-      color: #ffab91;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-      min-width: 120px;
-    }
-    .display-panel span {
-      font-weight: bold;
-      color: #fff;
-      font-size: 1.4em;
-    }
-
-    /* スロットマシンのスタイル */
+    /* スロット配置 */
     .slot-container {
       display: flex;
       justify-content: center;
       align-items: flex-end;
-      gap: 30px;
-      perspective: 1000px;
-      margin-bottom: 40px;
+      gap: 40px;
       position: relative;
+      margin-bottom: 50px;
     }
 
     .slot {
       width: 100px;
       height: 150px;
-      border: 5px solid #ffffff;
+      border: 5px solid #fff;
       border-radius: 10px;
       overflow: hidden;
-      position: relative;
       background: #000;
-      cursor: pointer;
+      position: relative;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-      transition: box-shadow 0.3s;
-    }
-
-    .slot:hover {
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
     }
 
     .slot-inner {
@@ -112,11 +58,9 @@
       top: 0;
       left: 0;
       width: 100%;
-      /* リールの高さはリール内のアイテム数 × アイテムの高さ */
-      height: 900px; /* 6アイテム × 150px */
-      transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1);
+      height: 900px; /* 6 * 150 */
+      transition: transform 0.5s ease-out;
     }
-
     .slot-item {
       width: 100%;
       height: 150px;
@@ -124,47 +68,45 @@
       justify-content: center;
       align-items: center;
       font-size: 3em;
-      color: #ffffff;
       background: #333;
+      color: #fff;
       border-bottom: 2px solid #555;
     }
 
-    /* 赤い丸ボタン(停止ボタン) */
+    /* 各リール下のストップボタン */
     .stop-button {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       background-color: red;
       border: 2px solid #fff;
       border-radius: 50%;
-      cursor: pointer;
       position: absolute;
-      bottom: -40px;
       left: 50%;
       transform: translateX(-50%);
-      transition: background-color 0.2s, transform 0.2s;
-      display: none; /* スピン開始まで非表示 */
+      bottom: -60px;
+      cursor: pointer;
+      z-index: 2;
+      transition: transform 0.2s;
     }
     .stop-button:hover {
-      background-color: #ff4444;
       transform: translateX(-50%) scale(1.1);
     }
 
-    /* レバー */
+    /* レバー (左端に固定) */
     .lever {
       position: absolute;
+      left: -70px;
+      bottom: 0;
       width: 40px;
       height: 100px;
       background: linear-gradient(to bottom, #555, #111);
       border: 3px solid #fff;
       border-radius: 10px;
-      left: -70px; /* 左リールの左斜め下あたり */
-      bottom: 0;
       cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
       transform-origin: bottom center;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
       transition: transform 0.3s ease-out;
     }
-    /* レバー先端の玉部分 */
     .lever:before {
       content: '';
       position: absolute;
@@ -177,70 +119,26 @@
       border: 2px solid #fff;
       border-radius: 50%;
     }
-    .lever:hover {
-      transform: rotate(-10deg);
-    }
-    /* レバーを引いた時の演出用クラス */
     .lever.pull {
       animation: pullLever 0.4s forwards;
     }
     @keyframes pullLever {
-      0% {
-        transform: rotate(0deg);
-      }
-      50% {
-        transform: rotate(-30deg);
-      }
-      100% {
-        transform: rotate(0deg);
-      }
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(-30deg); }
+      100% { transform: rotate(0deg); }
     }
 
-    /* 画像のスタイル (当たり演出) */
-    .flash-image {
-      position: absolute;
-      bottom: 30%;
-      right: 10%;
-      opacity: 0.9;
-      display: none;
-      animation: blink 0.2s infinite;
-      z-index: 2; /* 画像を最前面に */
-      max-width: 200px;
-      max-height: 200px;
-      border-radius: 10px;
-    }
-
-    @keyframes blink {
-      0%,
-      50% {
-        opacity: 0.2;
-      }
-      25%,
-      75% {
-        opacity: 1;
-      }
-    }
-
-    /* 大当たり時の光彩アニメーション */
+    /* 当たったときの光り方 */
     .hit-flash {
       animation: bigFlash 1s infinite alternate;
     }
     @keyframes bigFlash {
-      0% {
-        box-shadow: 0 0 20px 5px #ffff66;
-      }
-      100% {
-        box-shadow: 0 0 40px 20px #ffeb3b;
-      }
+      from { box-shadow: 0 0 10px 5px #ffff66; }
+      to   { box-shadow: 0 0 30px 20px #ffeb3b; }
     }
 
-    /* ボタンのスタイルを少し変更 (例: 表示するボタンをレバーに変更) */
-    .spin-button {
-      display: none; /* 使わないので非表示にしてもOK */
-    }
-
-    /* レスポンシブデザイン */
-    @media (max-width: 600px) {
+    /* レスポンシブ */
+    @media(max-width: 600px) {
       .slot-container {
         gap: 10px;
       }
@@ -249,63 +147,34 @@
         height: 100px;
       }
       .slot-inner {
-        height: 600px; /* 6アイテム × 100px */
+        height: 600px; /* 6 * 100 */
       }
       .slot-item {
         height: 100px;
         font-size: 2em;
       }
-      .flash-image {
-        max-width: 150px;
-        max-height: 150px;
-        bottom: 40%;
-        right: 2.5%;
-        width: 30vw;
-        height: auto;
-      }
-      .display-panel {
-        font-size: 1em;
+      .stop-button {
+        width: 30px;
+        height: 30px;
+        bottom: -40px;
       }
       .lever {
+        left: -55px;
         width: 30px;
         height: 80px;
-        left: -50px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- 数学的な背景シンボル -->
-  <script>
-    const symbols = ['π', 'Σ', '∫', 'Δ', '+', '√', 'π', '036', '≤', '≥', '036', 'θ', '036', 'Ω'];
-    const numberOfSymbols = 30;
-
-    for (let i = 0; i < numberOfSymbols; i++) {
-      const symbol = document.createElement('div');
-      symbol.classList.add('symbol');
-      symbol.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      symbol.style.top = Math.random() * 100 + 'vh';
-      symbol.style.left = Math.random() * 100 + 'vw';
-      symbol.style.fontSize = Math.random() * 20 + 20 + 'px';
-      symbol.style.animationDuration = Math.random() * 10 + 10 + 's';
-      symbol.style.animationDelay = '-' + Math.random() * 15 + 's';
-      document.body.appendChild(symbol);
-    }
-  </script>
-
   <div class="content">
     <h1>03.6％の奇跡 - スロットマシン版</h1>
-
-    <!-- 挑戦回数ディスプレイ -->
-    <div class="display-panel" id="displayPanel">
-      挑戦回数: <span id="challengeCount">0</span>
-    </div>
 
     <div class="slot-container">
       <!-- レバー -->
       <div class="lever" id="lever"></div>
 
-      <!-- スロットリール1 -->
+      <!-- リール1 -->
       <div class="slot" id="slot0">
         <div class="slot-inner">
           <div class="slot-item">0</div>
@@ -317,8 +186,7 @@
         </div>
         <div class="stop-button" id="stop0"></div>
       </div>
-
-      <!-- スロットリール2 -->
+      <!-- リール2 -->
       <div class="slot" id="slot1">
         <div class="slot-inner">
           <div class="slot-item">0</div>
@@ -330,164 +198,116 @@
         </div>
         <div class="stop-button" id="stop1"></div>
       </div>
-
-      <!-- スロットリール3 -->
+      <!-- リール3 （6を入れる）-->
       <div class="slot" id="slot2">
         <div class="slot-inner">
           <div class="slot-item">0</div>
           <div class="slot-item">1</div>
           <div class="slot-item">2</div>
           <div class="slot-item">3</div>
-          <div class="slot-item">4</div>
+          <div class="slot-item">6</div> <!-- ここを6に！ -->
           <div class="slot-item">5</div>
         </div>
         <div class="stop-button" id="stop2"></div>
       </div>
     </div>
-
-    <!-- Flash Image -->
-    <img src="osm.png" alt="Osm Image" class="flash-image" id="flashImage" />
-    <!-- 元々のスピンボタン: 非表示に設定済み -->
-    <button class="spin-button" id="spinButton">スピン</button>
   </div>
 
   <script>
-    // リール要素
+    // リール
     const slots = [
       document.getElementById('slot0'),
       document.getElementById('slot1'),
       document.getElementById('slot2'),
     ];
 
-    // 停止ボタン
+    // ストップボタン
     const stopButtons = [
       document.getElementById('stop0'),
       document.getElementById('stop1'),
       document.getElementById('stop2'),
     ];
 
-    // レバー (クリックでスロット回転)
+    // レバー
     const lever = document.getElementById('lever');
 
-    // 当たり演出用画像
-    const flashImage = document.getElementById('flashImage');
-
-    // スピンボタン(今回は使わない, デモ用)
-    const spinButton = document.getElementById('spinButton');
-
-    // 挑戦回数表示用
-    const displayPanel = document.getElementById('displayPanel');
-    const challengeCountSpan = document.getElementById('challengeCount');
-
-    // ステート管理用
     let isSpinning = false;
     let results = [null, null, null];
-    let spinIntervals = [null, null, null]; // リールごとにInterval管理
+    const reelHeight = 150;
+    const reelCount = 6;
+    let spinIntervals = [null, null, null];
     const currentPositions = [0, 0, 0];
-    const reelHeight = 150; // 1コマの高さ(px)
-    const reelItems = 6;    // 各リールに6コマ
 
-    // 挑戦回数を localStorage から読み込み (初期化)
-    let challengeCount = parseInt(localStorage.getItem('challengeCount') || '0', 10);
-    challengeCountSpan.textContent = challengeCount;
-
-    // レバーを引いてスロット開始
+    // レバーをクリックしたら回転開始
     lever.addEventListener('click', () => {
       if (isSpinning) return;
-      lever.classList.add('pull'); // レバーを引くアニメーション
-
+      lever.classList.add('pull'); // レバー引くアニメ
       startSpinning();
-      // レバーアニメーションが終わったらクラスを外す
-      setTimeout(() => {
-        lever.classList.remove('pull');
-      }, 500);
+      setTimeout(() => lever.classList.remove('pull'), 500);
     });
 
-    // ▼▼▼ スロットを回転させる関数 ▼▼▼
+    // 回転開始
     function startSpinning() {
-      if (isSpinning) return;
       isSpinning = true;
       results = [null, null, null];
 
-      // 挑戦回数を増やし、表示と保存
-      challengeCount++;
-      challengeCountSpan.textContent = challengeCount;
-      localStorage.setItem('challengeCount', challengeCount.toString());
-
-      // 各リールの停止ボタンを有効化・表示
+      // ボタンを表示・有効化
       stopButtons.forEach((btn) => {
         btn.style.display = 'block';
         btn.disabled = false;
       });
 
-      // リールごとに回転
+      // 各リールをぐるぐる
       slots.forEach((slot, index) => {
         const slotInner = slot.querySelector('.slot-inner');
+        // 既にインターバル動いていれば止める
+        if (spinIntervals[index]) clearInterval(spinIntervals[index]);
 
-        // インターバルでグルグル回す
         spinIntervals[index] = setInterval(() => {
-          currentPositions[index] = (currentPositions[index] + 1) % reelItems;
-          const translateY = -reelHeight * currentPositions[index];
-          slotInner.style.transform = `translateY(${translateY}px)`;
-        }, 100); // 回転速度
+          currentPositions[index] = (currentPositions[index] + 1) % reelCount;
+          slotInner.style.transform = `translateY(${-reelHeight * currentPositions[index]}px)`;
+        }, 30); // 30ms間隔 → 高速
       });
     }
 
-    // ▼▼▼ 各リールを停止させる関数 ▼▼▼
+    // リールを停止
     function stopReel(index) {
       if (!isSpinning || results[index] !== null) return;
 
-      const slot = slots[index];
-      const slotInner = slot.querySelector('.slot-inner');
-
-      // インターバルを止める
+      // 動いてるインターバルをクリア
       clearInterval(spinIntervals[index]);
       spinIntervals[index] = null;
 
-      // 停止位置(すでにcurrentPositions[index] が何かの値を持っている)
-      const stopPosition = currentPositions[index];
-      slotInner.style.transition = 'transform 0.7s cubic-bezier(0.25, 1, 0.5, 1)';
-      const translateY = -reelHeight * stopPosition;
-      slotInner.style.transform = `translateY(${translateY}px)`;
+      // 既に currentPositions[index] に値があるのでそのまま停止
+      const stopPos = currentPositions[index];
+      results[index] = slots[index].querySelector('.slot-inner')
+                        .children[stopPos].textContent;
 
-      // ボタンを無効化
+      // アニメーションで止める演出
+      const slotInner = slots[index].querySelector('.slot-inner');
+      slotInner.style.transition = 'transform 0.7s ease-out';
+      slotInner.style.transform = `translateY(${-reelHeight * stopPos}px)`;
+
+      // このボタンを無効化
       stopButtons[index].disabled = true;
 
-      // トランジション終了後に結果を記録
-      slotInner.addEventListener('transitionend', function handler() {
-        slotInner.removeEventListener('transitionend', handler);
-        // 現在表示されているコマの数字を取得
-        const resultText = slotInner.children[stopPosition].textContent;
-        results[index] = resultText;
-
-        // 全リール停止チェック
-        if (results.every((r) => r !== null)) {
-          checkResult();
-        }
-      });
+      // 全部止まったかチェック
+      if (results.every((val) => val !== null)) {
+        checkResult();
+      }
     }
 
-    // ▼▼▼ 結果をチェックして当たり演出 ▼▼▼
+    // 結果をチェック
     function checkResult() {
-      const combinedResult = results.join('');
-      console.log('結果:', combinedResult);
+      const combined = results.join('');
+      console.log('結果:', combined);
 
-      if (combinedResult === '036') {
-        // 当たりの場合
-        flashImage.style.display = 'block';
-
-        // リール全体を光らせる演出
-        slots.forEach((s) => {
-          s.classList.add('hit-flash');
-        });
+      if (combined === '036') {
+        // 当たり
+        slots.forEach((s) => s.classList.add('hit-flash'));
 
         setTimeout(() => {
-          flashImage.style.display = 'none';
-          // リールの光彩アニメーションを除去
-          slots.forEach((s) => {
-            s.classList.remove('hit-flash');
-          });
-          // 2秒後にリダイレクト
+          slots.forEach((s) => s.classList.remove('hit-flash'));
           window.location.href =
             'https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F';
         }, 2000);
@@ -495,27 +315,20 @@
         alert('なんぼでも挑戦可能！狙うはあの数字？');
       }
 
-      // リセット処理
+      // リセット
       isSpinning = false;
       stopButtons.forEach((btn) => {
         btn.style.display = 'none';
         btn.disabled = false;
       });
       slots.forEach((slot) => {
-        const slotInner = slot.querySelector('.slot-inner');
-        // トランジションリセット
-        slotInner.style.transition = 'transform 0.5s ease-out';
+        slot.querySelector('.slot-inner').style.transition = 'transform 0.5s ease-out';
       });
     }
 
-    // ▼▼▼ 停止ボタンにイベントを付与 ▼▼▼
-    stopButtons.forEach((button, index) => {
-      button.addEventListener('click', () => stopReel(index));
-    });
-
-    // （参考）スピンボタン: 今回は非表示だがデモ用に残す
-    spinButton.addEventListener('click', () => {
-      startSpinning();
+    // ストップボタンにイベント
+    stopButtons.forEach((btn, i) => {
+      btn.addEventListener('click', () => stopReel(i));
     });
   </script>
 </body>
