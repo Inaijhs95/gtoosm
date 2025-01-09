@@ -9,7 +9,7 @@
     body {
       margin: 0;
       padding: 0;
-      /* overflow: hidden; ←削除またはコメントアウト */
+      /* overflow: hidden; ←削除でスクロールできるようにしてもOK */
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       font-family: 'Roboto', sans-serif;
       color: #ffffff;
@@ -52,11 +52,10 @@
     /* ===== リール本体 ===== */
     .slot {
       width: 100px;
-      height: 150px;
+      height: 150px; /* リール表示枠の高さ */
       border: 5px solid #fff;
       border-radius: 10px;
-      /* overflow: hidden; ←ココを visible に変更 */
-      overflow: visible;
+      overflow: hidden;  /* リールの範囲外は隠す → 棒状に揺れるのを防ぐ */
       position: relative;
       background: #000;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -69,7 +68,8 @@
       width: 100%;
       /* 6アイテム × 150px = 900px */
       height: 900px;
-      transition: transform 0.5s ease-out;
+      transition: transform 0.5s ease-out; 
+      /* 回転終了時のスムーズな停止演出 */
     }
 
     .slot-item {
@@ -93,14 +93,12 @@
       border-radius: 50%;
       position: absolute;
       left: 50%;
-      /* bottom: -60px; ← 画面に合わせて調整
-         例: -40px, 0, etc. */
-      bottom: -50px;
+      bottom: -50px; /* 枠より少し下に配置 */
       transform: translateX(-50%);
       cursor: pointer;
       transition: transform 0.2s;
       display: none; /* 回転開始時に表示 */
-      z-index: 999;  /* 他の要素に隠れないよう大きめに */
+      z-index: 999;
     }
     .stop-button:hover {
       transform: translateX(-50%) scale(1.1);
@@ -201,7 +199,7 @@
       .stop-button {
         width: 30px;
         height: 30px;
-        bottom: -40px; /* 位置を調整 */
+        bottom: -40px;
       }
       .lever {
         left: -50px;
@@ -258,7 +256,7 @@
         <div class="slot-item">1</div>
         <div class="slot-item">2</div>
         <div class="slot-item">3</div>
-        <div class="slot-item">6</div>
+        <div class="slot-item">6</div> <!-- 6を入れておく -->
         <div class="slot-item">5</div>
       </div>
       <div class="stop-button" id="stop2"></div>
@@ -348,11 +346,13 @@
           clearInterval(spinIntervals[index]);
         }
 
-        // setIntervalで高速回転
+        // setIntervalで高速回転 (30msごとに1コマ進む)
         spinIntervals[index] = setInterval(() => {
           currentPositions[index] = (currentPositions[index] + 1) % reelItems;
-          slotInner.style.transform = `translateY(${-reelHeight * currentPositions[index]}px)`;
-        }, 30); // 30msごとに1コマ進める → 高速
+          // ↑ 0→1→2→3→4→5→0→... とコマが変化
+          slotInner.style.transform = 
+            `translateY(${-reelHeight * currentPositions[index]}px)`;
+        }, 30);
       });
     }
 
@@ -371,21 +371,22 @@
       results[i] = slots[i].querySelector('.slot-inner')
                    .children[stopPos].textContent;
 
-      // 停止アニメ用に transition
+      // 停止アニメ (スムーズに止まる)
       const slotInner = slots[i].querySelector('.slot-inner');
       slotInner.style.transition = 'transform 0.7s ease-out';
-      slotInner.style.transform = `translateY(${-reelHeight * stopPos}px)`;
+      slotInner.style.transform = 
+        `translateY(${-reelHeight * stopPos}px)`;
 
-      // このストップボタンを無効化
+      // ストップボタンを無効化
       stopButtons[i].disabled = true;
 
-      // 全て停止したか確認
+      // 全てのリールが停止したら結果をチェック
       if (results.every((val) => val !== null)) {
         checkResult();
       }
     }
 
-    // 各ストップボタンにイベント付与
+    // ストップボタンにイベント付与
     stopButtons.forEach((btn, i) => {
       btn.addEventListener('click', () => stopReel(i));
     });
