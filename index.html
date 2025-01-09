@@ -8,7 +8,7 @@
     /* ベースリセット */
     * {
       box-sizing: border-box;
-      margin: 0; 
+      margin: 0;
       padding: 0;
     }
     body {
@@ -61,7 +61,7 @@
       top: 170px;   /* 画面上からの距離（調整可） */
       right: 15px;  /* 右端からの距離（調整可） */
       width: 70px;
-      display: none; 
+      display: none;
       z-index: 10;  /* リールより前面に */
     }
 
@@ -102,7 +102,7 @@
       border-radius: 50%;
       box-shadow: 0 0 8px rgba(0,0,0,0.6) inset, 0 4px 6px rgba(0,0,0,0.8);
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: transform 0.2s ease; /* アニメーションを滑らかに */
       user-select: none;
     }
     .lever-ball:active {
@@ -123,7 +123,7 @@
     /* リール枠 */
     .reel {
       width: 60px;
-      height: 80px;
+      height: 80px; /* 窓の高さ */
       overflow: hidden;
       border-radius: 8px;
       background: #000;
@@ -131,20 +131,19 @@
       margin-bottom: 6px;
       position: relative;
     }
-    /* リール内に 0-7 を複数回並べる */
+    /* リール内 */
     .numbers {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      /* 高さは 8(数字)×2(繰り返し)=16行 × 30px = 480px など */
-      /* もっと繰り返してもOK */
+      background: #fff; /* 全体を白背景に */
     }
     .numbers div {
       height: 30px;
       line-height: 30px;
       text-align: center;
-      background: #fff;
+      background: transparent; /* 個々は透明(上で白背景にしている) */
       color: #000;
       border-bottom: 1px solid #ccc;
       font-size: 1.2em;
@@ -170,6 +169,11 @@
     .stop-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+
+    /* ストップ後、その行を太字にするクラス */
+    .boldNumber {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -223,11 +227,13 @@
 
 <script>
   /* -------------------------------------------
-      1)  0～7 を複数回並べた配列を生成して 
+      1)  0～7 を複数回並べた配列を生成して
           リール要素に差し込む
       2)  setInterval で高速に translateY を移動し
           目で追えないくらいのスピードを演出
-      3)  STOP すると、最終結果の数字が見える位置で静止
+      3)  STOP すると、リールの真ん中(約40px)に
+          最終結果の数字が来るように微調整し、
+          その行だけ太字にする
   ------------------------------------------- */
 
   const spinCountText = document.getElementById('spinCountText');
@@ -297,9 +303,9 @@
     displayMessage.textContent = "";
     winImage.style.display = "none";
 
-    // 50%で(0,3,6)／3.6%でランダム
-    if(Math.random() < 0.036){
-      finalResults = [7, 2, 5];
+    // 50%で(0,3,6)／50%でランダム
+    if(Math.random() < 0.5){
+      finalResults = [0, 3, 6];
     } else {
       finalResults = [
         Math.floor(Math.random()*8),
@@ -351,48 +357,51 @@
     isSpinning[idx] = false;
     btn.disabled = true;
 
-    // 最終結果の数字 finalResults[idx] が
-    // リール表示窓(高さ80px)の一番上にピタッと来るように
-    // => 1数字あたり30px なので finalResults[idx] 行目に合わせる
-    // ただしリールには 0～7×4回 = 合計32行あるので
-    // finalVal分だけ下げたいが、同じ数字が何度もある…
-    // シンプルには "finalResults[idx] の行が上部に来る" とするため
-    // finalVal * 30 px だけ translateY する。のだが繰り返しレイアウトゆえ
-    // 余白を考慮してモジュロ演算を追加します。
+    // 最終結果の数字 finalResults[idx] をリールの「中心(約40pxの位置)」にくるように
+    // かつ、その数字の行を太字にする
 
     const finalVal = finalResults[idx];
     const container = (idx===0)? numbers1 : (idx===1)? numbers2 : numbers3;
-
-    // 0～7の 4セット=32行 => もし finalVal=3 の場合、行は 3, 11, 19, 27 に同じ数字"3"がある
-    // ここでは "一番近い位置の finalVal" に合わせる仕組みにする
-
-    // reelPos[idx] は "現在下にスクロールした量"
-    // まず finalVal と同じ行を探す
-    // 1行目(配列idx=0) → 0, 2行目(=1) → 1 ... 8行目(=7) →7, 9行目(=8)→0 ...
-    // これを全部ループして "現在のスクロール位置" に最も近い finalVal の行を特定する
-
-    // すべての行(0～31)について、そこに書かれている数字numList[i]を比較
     const allDivs = container.querySelectorAll('div');
+
+    // まず全行の太字を解除
+    allDivs.forEach(div => div.classList.remove('boldNumber'));
+
     let closestDist = Infinity;
     let bestOffset = 0;
+    let bestIndex = 0;
 
     for(let i=0; i<allDivs.length; i++){
       const num = parseInt(allDivs[i].textContent, 10);
-      if(num===finalVal){
-        // この行がウィンドウ最上部に来るには translateY = -( i * 30 ) 
-        // 現在の translateY は - reelPos[idx]
-        // 変化量 =  ( i*30 ) - reelPos[idx]
-        const dist = Math.abs( (i*30) - reelPos[idx] );
+      if(num === finalVal){
+        // 通常は i*30 がリール上端に来る位置
+        // しかし「真ん中(40px)」に合わせるには top を "i*30 - 25px" くらいにする
+        //   (行の高さ 30px の先頭が reel中央=40px に来る→ top=40-30=10px もあり)
+        // 今回は 25px を引いて "中央付近" にします(好みで要微調整)
+        const desiredOffset = i*30 - 25; 
+
+        // 今のスクロール位置 reelPos[idx] との差
+        const dist = Math.abs(desiredOffset - reelPos[idx]);
         if(dist < closestDist){
           closestDist = dist;
-          bestOffset = i*30;
+          bestOffset = desiredOffset;
+          bestIndex = i;
         }
       }
     }
-    // bestOffset が "finalVal の行がウィンドウ上部にちょうど来る位置"
-    // -> "reelPos[idx]" を "bestOffset" にあわせる
-    reelPos[idx] = bestOffset % reelHeight;
+
+    // モジュロ演算で範囲内に収める
+    // bestOffset が負になったり reelHeight を越える場合があるので
+    // 一度 (bestOffset mod reelHeight) をとる
+    // ただ JS の % は負数でも正確でなかったりするので一工夫:
+    function modInRange(x, range){
+      return ((x % range) + range) % range;
+    }
+    reelPos[idx] = modInRange(bestOffset, reelHeight);
     container.style.transform = `translateY(-${reelPos[idx]}px)`;
+
+    // 太字付与
+    allDivs[bestIndex].classList.add('boldNumber');
 
     // 全リール止まった？
     if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
@@ -403,7 +412,7 @@
   /* --- 結果判定 --- */
   function checkResult(){
     const [r1, r2, r3] = finalResults;
-    if(r1===7 && r2===2 && r3===5){
+    if(r1===0 && r2===3 && r3===6){
       // 大当たり
       displayMessage.textContent = "大当たり！！";
       winImage.style.display = "block";
