@@ -101,11 +101,20 @@
       background: radial-gradient(#222, #000);
       border-radius: 50%;
       box-shadow: 0 0 8px rgba(0,0,0,0.6) inset, 0 4px 6px rgba(0,0,0,0.8);
-      cursor: pointer;
-      transition: transform 0.2s ease; /* アニメーションを滑らかに */
       user-select: none;
+
+      /* スマホでのハイライト等を防ぐ(押し込み演出が見やすくなる) */
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none; 
+      
+      /* アニメーションを滑らかに */
+      transition: transform 0.2s ease;
+      cursor: pointer;
     }
-    .lever-ball:active {
+    /* 旧 :active ではなく .pressed クラスで押し込む */
+    .lever-ball.pressed {
       transform: translateY(40px);
     }
 
@@ -234,13 +243,40 @@
       3)  STOP すると、リールの真ん中(約40px)に
           最終結果の数字が来るように微調整し、
           その行だけ太字にする
+      4)  レバー押下演出は :active ではなく
+          JSで .pressed を付与して確認しやすく
   ------------------------------------------- */
 
+  /* --- レバー押し込み演出（.pressed） --- */
+  const leverBall = document.getElementById('leverBall');
+  // PCマウス用
+  leverBall.addEventListener('mousedown', () => {
+    leverBall.classList.add('pressed');
+  });
+  leverBall.addEventListener('mouseup', () => {
+    leverBall.classList.remove('pressed');
+  });
+  leverBall.addEventListener('mouseleave', () => {
+    leverBall.classList.remove('pressed');
+  });
+
+  // スマホタッチ用
+  leverBall.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // iOSでのダブルタップズーム等を防ぐ
+    leverBall.classList.add('pressed');
+  }, {passive:false});
+  leverBall.addEventListener('touchend', () => {
+    leverBall.classList.remove('pressed');
+  });
+  leverBall.addEventListener('touchcancel', () => {
+    leverBall.classList.remove('pressed');
+  });
+
+  /* --------------------------------------- */
   const spinCountText = document.getElementById('spinCountText');
   const displayMessage = document.getElementById('displayMessage');
   const winImage = document.getElementById('winImage');
 
-  const leverBall = document.getElementById('leverBall');
   const stopBtn1 = document.getElementById('stop1');
   const stopBtn2 = document.getElementById('stop2');
   const stopBtn3 = document.getElementById('stop3');
@@ -303,7 +339,7 @@
     displayMessage.textContent = "";
     winImage.style.display = "none";
 
-    // 50%で(0,3,6)／50%でランダム
+    // 抽選 (36%で(0,3,6) / 64%でランダム)
     if(Math.random() < 0.36){
       finalResults = [0, 3, 6];
     } else {
@@ -325,7 +361,7 @@
     stopBtn3.disabled = false;
   });
 
-  /* --- リールを回す(超高速スクロール) --- */
+  /* --- リールを回す(高速スクロール) --- */
   function startReel(idx){
     isSpinning[idx] = true;
     reelPos[idx] = 0;
@@ -342,7 +378,7 @@
         reelPos[idx] = reelPos[idx] % reelHeight;
       }
       container.style.transform = `translateY(-${reelPos[idx]}px)`;
-    }, 20); // 20msごとにscrollSpeed分動かす(1秒あたり1000/20=50回×120px=6000px/sec)
+    }, 20); // 20msごとに scrollSpeed pxずつ動かす
   }
 
   /* --- STOPボタン --- */
@@ -375,12 +411,9 @@
       const num = parseInt(allDivs[i].textContent, 10);
       if(num === finalVal){
         // 通常は i*30 がリール上端に来る位置
-        // しかし「真ん中(40px)」に合わせるには top を "i*30 - 25px" くらいにする
-        //   (行の高さ 30px の先頭が reel中央=40px に来る→ top=40-30=10px もあり)
-        // 今回は 25px を引いて "中央付近" にします(好みで要微調整)
-        const desiredOffset = i*30 - 25; 
+        // しかし「真ん中(40px)」に合わせるには top を "i*30 - 25px" くらい
+        const desiredOffset = i*30 - 25;
 
-        // 今のスクロール位置 reelPos[idx] との差
         const dist = Math.abs(desiredOffset - reelPos[idx]);
         if(dist < closestDist){
           closestDist = dist;
@@ -391,9 +424,6 @@
     }
 
     // モジュロ演算で範囲内に収める
-    // bestOffset が負になったり reelHeight を越える場合があるので
-    // 一度 (bestOffset mod reelHeight) をとる
-    // ただ JS の % は負数でも正確でなかったりするので一工夫:
     function modInRange(x, range){
       return ((x % range) + range) % range;
     }
