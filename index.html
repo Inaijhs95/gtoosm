@@ -113,7 +113,7 @@
       transition: transform 0.2s ease;
       cursor: pointer;
     }
-    /* 旧 :active ではなく .pressed クラスで押し込む */
+    /* 押し込む間だけ下がるアニメを .pressed クラスで表現 */
     .lever-ball.pressed {
       transform: translateY(40px);
     }
@@ -236,35 +236,37 @@
 
 <script>
   /* -------------------------------------------
-      1)  0～7 を複数回並べた配列を生成して
-          リール要素に差し込む
-      2)  setInterval で高速に translateY を移動し
-          目で追えないくらいのスピードを演出
-      3)  STOP すると、リールの真ん中(約40px)に
-          最終結果の数字が来るように微調整し、
-          その行だけ太字にする
-      4)  レバー押下演出は :active ではなく
-          JSで .pressed を付与して確認しやすく
+      1)  指を置いた瞬間にレバーが下がり、同時にスロットを回す
+      2)  指を離す(またはマウスを離す)まで押し込み状態を維持
+      3)  STOP すると、リールの真ん中(約40px)に数字が止まり
+         該当数字を太字に
+      4)  当たり(0,3,6)なら2秒後にURLへ飛ぶ
   ------------------------------------------- */
 
-  /* --- レバー押し込み演出（.pressed） --- */
+  // ----------------------------------------
+  //  レバー押下演出 & スロット起動
+  // ----------------------------------------
   const leverBall = document.getElementById('leverBall');
-  // PCマウス用
-  leverBall.addEventListener('mousedown', () => {
-    leverBall.classList.add('pressed');
+
+  // PCマウス用: mousedown で回転開始
+  leverBall.addEventListener('mousedown', e => {
+    e.preventDefault();
+    handleLeverPress();
   });
-  leverBall.addEventListener('mouseup', () => {
+  // 指を離したら押し込み解除
+  leverBall.addEventListener('mouseup', e => {
     leverBall.classList.remove('pressed');
   });
-  leverBall.addEventListener('mouseleave', () => {
+  leverBall.addEventListener('mouseleave', e => {
     leverBall.classList.remove('pressed');
   });
 
-  // スマホタッチ用
-  leverBall.addEventListener('touchstart', (e) => {
-    e.preventDefault(); // iOSでのダブルタップズーム等を防ぐ
-    leverBall.classList.add('pressed');
+  // スマホタッチ用: touchstart で回転開始
+  leverBall.addEventListener('touchstart', e => {
+    e.preventDefault();
+    handleLeverPress();
   }, {passive:false});
+  // 離したら押し込み解除
   leverBall.addEventListener('touchend', () => {
     leverBall.classList.remove('pressed');
   });
@@ -272,7 +274,18 @@
     leverBall.classList.remove('pressed');
   });
 
-  /* --------------------------------------- */
+  // レバー押し込み時の処理をまとめた関数
+  function handleLeverPress() {
+    // レバーを下げる演出
+    leverBall.classList.add('pressed');
+
+    // スロットを回し始める
+    startSlotIfNotSpinning();
+  }
+
+  // ----------------------------------------
+  //   スロットの本体ロジック
+  // ----------------------------------------
   const spinCountText = document.getElementById('spinCountText');
   const displayMessage = document.getElementById('displayMessage');
   const winImage = document.getElementById('winImage');
@@ -302,7 +315,6 @@
         digits.push(n);
       }
     }
-    // DOM生成
     container.innerHTML = '';
     digits.forEach(num => {
       const div = document.createElement('div');
@@ -314,32 +326,31 @@
   fillNumbersDOM(numbers2);
   fillNumbersDOM(numbers3);
 
-  /* --- リール回転管理用 --- */
-  let isSpinning = [false, false, false];  // 各リールが回転中か
-  let reelPos = [0, 0, 0];                 // translateY の現在値
-  let reelTimer = [null, null, null];      // setInterval ID
-  const reelHeight = 30 * 8 * 4;           // 上で 0～7を4セット = 32行, 1行30px => 960px
-  // スクロール速度(px/interval)
-  const scrollSpeed = 60;  // 1回のsetIntervalで何px動かすか
+  let isSpinning = [false, false, false];
+  let reelPos = [0, 0, 0];
+  let reelTimer = [null, null, null];
+  const reelHeight = 30 * 8 * 4;  // 32行 * 30px = 960px
+  const scrollSpeed = 60;         // px/interval
 
   // 抽選結果
   let finalResults = [0, 0, 0];
 
-  /* --- レバーを押したとき(抽選+回転スタート) --- */
-  leverBall.addEventListener('click', () => {
-    // まだ回転中なら無視
+  // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
+  function startSlotIfNotSpinning() {
+    // まだ回転中なら何もしない
     if(isSpinning.some(sp => sp)) return;
 
-    // 回転数+1, 保存
+    // 回転数アップ
     spinCount++;
     localStorage.setItem('slotSpinCount', spinCount);
     updateSpinCountDisplay();
 
-    // メッセージと大当たり画像をリセット
+    // メッセージ等リセット
     displayMessage.textContent = "";
     winImage.style.display = "none";
 
-    // 抽選 (36%で(0,3,6) / 64%でランダム)
+    // 抽選
+    // (36%で 0,3,6 / 64%でランダム)
     if(Math.random() < 0.36){
       finalResults = [0, 3, 6];
     } else {
@@ -350,7 +361,7 @@
       ];
     }
 
-    // リールを3本ともスタート
+    // 3本のリールを回転開始
     for(let i=0; i<3; i++){
       startReel(i);
     }
@@ -359,48 +370,41 @@
     stopBtn1.disabled = false;
     stopBtn2.disabled = false;
     stopBtn3.disabled = false;
-  });
+  }
 
-  /* --- リールを回す(高速スクロール) --- */
-  function startReel(idx){
+  // リール回転
+  function startReel(idx) {
     isSpinning[idx] = true;
     reelPos[idx] = 0;
-    const container = (idx===0)? numbers1 : (idx===1)? numbers2 : numbers3;
-
+    const container = [numbers1, numbers2, numbers3][idx];
     // 既存のsetIntervalがあればクリア
     if(reelTimer[idx]) clearInterval(reelTimer[idx]);
 
-    // 高速に下へ向かってスクロール(translateY)する
     reelTimer[idx] = setInterval(() => {
       reelPos[idx] += scrollSpeed;
-      // 繰り返しループ(モジュロ)
-      if(reelPos[idx] > reelHeight) {
-        reelPos[idx] = reelPos[idx] % reelHeight;
+      // モジュロでループ
+      if(reelPos[idx] > reelHeight){
+        reelPos[idx] %= reelHeight;
       }
       container.style.transform = `translateY(-${reelPos[idx]}px)`;
-    }, 20); // 20msごとに scrollSpeed pxずつ動かす
+    }, 20);
   }
 
-  /* --- STOPボタン --- */
-  stopBtn1.addEventListener('click', ()=> stopReel(0, stopBtn1));
-  stopBtn2.addEventListener('click', ()=> stopReel(1, stopBtn2));
-  stopBtn3.addEventListener('click', ()=> stopReel(2, stopBtn3));
+  // STOPボタン
+  stopBtn1.addEventListener('click', () => stopReel(0, stopBtn1));
+  stopBtn2.addEventListener('click', () => stopReel(1, stopBtn2));
+  stopBtn3.addEventListener('click', () => stopReel(2, stopBtn3));
 
   function stopReel(idx, btn){
     if(!isSpinning[idx]) return;
-    // 回転停止
     clearInterval(reelTimer[idx]);
     isSpinning[idx] = false;
     btn.disabled = true;
 
-    // 最終結果の数字 finalResults[idx] をリールの「中心(約40pxの位置)」にくるように
-    // かつ、その数字の行を太字にする
-
+    // 最終結果をリール中央にあわせる
     const finalVal = finalResults[idx];
-    const container = (idx===0)? numbers1 : (idx===1)? numbers2 : numbers3;
+    const container = [numbers1, numbers2, numbers3][idx];
     const allDivs = container.querySelectorAll('div');
-
-    // まず全行の太字を解除
     allDivs.forEach(div => div.classList.remove('boldNumber'));
 
     let closestDist = Infinity;
@@ -408,12 +412,9 @@
     let bestIndex = 0;
 
     for(let i=0; i<allDivs.length; i++){
-      const num = parseInt(allDivs[i].textContent, 10);
-      if(num === finalVal){
-        // 通常は i*30 がリール上端に来る位置
-        // しかし「真ん中(40px)」に合わせるには top を "i*30 - 25px" くらい
-        const desiredOffset = i*30 - 25;
-
+      const num = parseInt(allDivs[i].textContent,10);
+      if(num===finalVal){
+        const desiredOffset = i*30 - 25; // (真ん中40px付近に行を合わせる)
         const dist = Math.abs(desiredOffset - reelPos[idx]);
         if(dist < closestDist){
           closestDist = dist;
@@ -422,24 +423,19 @@
         }
       }
     }
-
-    // モジュロ演算で範囲内に収める
     function modInRange(x, range){
-      return ((x % range) + range) % range;
+      return ((x%range)+range)%range;
     }
     reelPos[idx] = modInRange(bestOffset, reelHeight);
     container.style.transform = `translateY(-${reelPos[idx]}px)`;
-
-    // 太字付与
     allDivs[bestIndex].classList.add('boldNumber');
 
-    // 全リール止まった？
+    // 全停止したら結果判定
     if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
       checkResult();
     }
   }
 
-  /* --- 結果判定 --- */
   function checkResult(){
     const [r1, r2, r3] = finalResults;
     if(r1===0 && r2===3 && r3===6){
@@ -447,16 +443,14 @@
       displayMessage.textContent = "おみごと！まもなくLINE画面を表示します。";
       winImage.style.display = "block";
       // 回転数リセット
-      spinCount = 0;
+      spinCount=0;
       localStorage.setItem('slotSpinCount', spinCount);
       updateSpinCountDisplay();
 
-      // 2秒後にリンク
-      setTimeout(()=>{
+      setTimeout(() => {
         window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
-      }, 2000);
+      },2000);
     } else {
-      // ハズレ
       displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
     }
   }
