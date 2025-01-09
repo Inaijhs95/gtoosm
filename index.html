@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>03.6％の奇跡</title>
+    <title>03.6％の奇跡 - スロットマシン版</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* 全体のスタイル */
@@ -52,89 +52,54 @@
             z-index: 1;
         }
         
-        /* サイコロのスタイル */
-        .dice-container {
+        /* スロットマシンのスタイル */
+        .slot-container {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
-            perspective: 1200px; /* パースペクティブを強調 */
+            perspective: 1000px;
             margin-bottom: 40px;
         }
         
-        /* サイコロのスタイル */
-        .dice {
+        .slot {
             width: 100px;
-            height: 100px;
-            position: relative;
-            transform-style: preserve-3d;
-            transform: rotateX(0deg) rotateY(0deg);
-            cursor: pointer;
+            height: 150px;
+            border: 5px solid #ffffff;
             border-radius: 10px;
-            transition: transform 0.5s, box-shadow 0.5s;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+            cursor: pointer;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            animation: rotateDice 5s linear infinite; /* アニメーションを追加 */
+            transition: box-shadow 0.3s;
         }
         
-        .dice.stop {
-            animation: none;
-            transform: rotateX(0deg) rotateY(0deg) scale(1.05); /* 停止時にわずかに拡大 */
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7); /* シャドウを強調 */
+        .slot:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7);
         }
         
-        /* アニメーションのキー設定 */
-        @keyframes rotateDice {
-            0% { transform: rotateX(0deg) rotateY(0deg); }
-            100% { transform: rotateX(360deg) rotateY(360deg); }
-        }
-        
-        /* サイコロの各面 */
-        .face {
+        .slot-inner {
             position: absolute;
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #ffffff, #cccccc);
-            border: 1px solid #000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            /* リールの高さはリール内のアイテム数 × アイテムの高さ */
+            height: 900px; /* 6アイテム × 150px */
+            transition: transform 0.5s ease-out;
+        }
+        
+        .slot-item {
+            width: 100%;
+            height: 150px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 2em;
-            font-weight: bold;
-            color: #000;
-            backface-visibility: hidden;
+            font-size: 3em;
+            color: #ffffff;
+            background: #333;
+            border-bottom: 2px solid #555;
         }
-        
-        /* 各面の配置 */
-        .front  { transform: translateZ(50px); }
-        .back   { transform: rotateY(180deg) translateZ(50px); }
-        .right  { transform: rotateY(90deg) translateZ(50px); }
-        .left   { transform: rotateY(-90deg) translateZ(50px); }
-        .top    { transform: rotateX(90deg) translateZ(50px); }
-        .bottom { transform: rotateX(-90deg) translateZ(50px); }
-        
-        /* サイコロ0の回転クラス */
-        .dice0-face0 { transform: rotateX(0deg) rotateY(0deg); }
-        .dice0-face3 { transform: rotateX(0deg) rotateY(180deg); }
-        .dice0-face6 { transform: rotateX(0deg) rotateY(90deg); }
-        .dice0-face1 { transform: rotateX(0deg) rotateY(-90deg); }
-        .dice0-face2 { transform: rotateX(90deg) rotateY(0deg); }
-        .dice0-face5 { transform: rotateX(-90deg) rotateY(0deg); }
-        
-        /* サイコロ3の回転クラス */
-        .dice3-face6 { transform: rotateX(0deg) rotateY(0deg); }
-        .dice3-face3 { transform: rotateX(0deg) rotateY(180deg); }
-        .dice3-face0 { transform: rotateX(0deg) rotateY(90deg); }
-        .dice3-face1 { transform: rotateX(0deg) rotateY(-90deg); }
-        .dice3-face2 { transform: rotateX(90deg) rotateY(0deg); }
-        .dice3-face5 { transform: rotateX(-90deg) rotateY(0deg); }
-        
-        /* サイコロ6の回転クラス */
-        .dice6-face1 { transform: rotateX(0deg) rotateY(0deg); }
-        .dice6-face0 { transform: rotateX(0deg) rotateY(180deg); }
-        .dice6-face3 { transform: rotateX(0deg) rotateY(90deg); }
-        .dice6-face6 { transform: rotateX(0deg) rotateY(-90deg); }
-        .dice6-face2 { transform: rotateX(90deg) rotateY(0deg); }
-        .dice6-face5 { transform: rotateX(-90deg) rotateY(0deg); }
         
         /* 画像のスタイル */
         .flash-image {
@@ -157,17 +122,19 @@
         
         /* レスポンシブデザイン */
         @media (max-width: 600px) {
-            .dice-container {
+            .slot-container {
                 gap: 10px;
             }
-            .dice {
+            .slot {
                 width: 70px;
-                height: 70px;
+                height: 100px;
             }
-            .face {
-                width: 70px;
-                height: 70px;
-                font-size: 1.5em;
+            .slot-inner {
+                height: 600px; /* 6アイテム × 100px */
+            }
+            .slot-item {
+                height: 100px;
+                font-size: 2em;
             }
             .flash-image {
                 max-width: 150px;
@@ -179,37 +146,22 @@
             }
         }
         
-        /* 追加: ホバー効果 */
-        .dice:hover {
-            transform: scale(1.05) rotateX(5deg) rotateY(5deg); /* わずかに拡大し、角度を変更 */
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.7); /* シャドウを強化 */
-            transition: transform 0.3s, box-shadow 0.3s;
+        /* ボタンのスタイル */
+        .spin-button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #ff5722;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
         }
         
-        /* 追加: 各面に異なるグラデーションを適用 */
-        .front  { 
-            transform: rotateY(0deg) translateZ(50px); 
-            background: linear-gradient(135deg, #ffffff, #e0e0e0);
-        }
-        .back   { 
-            transform: rotateY(180deg) translateZ(50px); 
-            background: linear-gradient(135deg, #f0f0f0, #d0d0d0);
-        }
-        .right  { 
-            transform: rotateY(90deg) translateZ(50px); 
-            background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
-        }
-        .left   { 
-            transform: rotateY(-90deg) translateZ(50px); 
-            background: linear-gradient(135deg, #ffe0b2, #ffcc80);
-        }
-        .top    { 
-            transform: rotateX(90deg) translateZ(50px); 
-            background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
-        }
-        .bottom { 
-            transform: rotateX(-90deg) translateZ(50px); 
-            background: linear-gradient(135deg, #ffccbc, #ffab91);
+        .spin-button:hover {
+            background-color: #e64a19;
         }
     </style>
 </head>
@@ -234,114 +186,106 @@
     </script>
 
     <div class="content">
-        <div class="dice-container">
-            <!-- サイコロ0 -->
-            <div class="dice" id="dice0">
-                <div class="face front">0</div>
-                <div class="face back">3</div>
-                <div class="face right">6</div>
-                <div class="face left">1</div>
-                <div class="face top">2</div>
-                <div class="face bottom">5</div>
+        <h1>03.6％の奇跡 - スロットマシン版</h1>
+        <div class="slot-container">
+            <!-- スロットリール1 -->
+            <div class="slot" id="slot0">
+                <div class="slot-inner">
+                    <div class="slot-item">0</div>
+                    <div class="slot-item">1</div>
+                    <div class="slot-item">2</div>
+                    <div class="slot-item">3</div>
+                    <div class="slot-item">4</div>
+                    <div class="slot-item">5</div>
+                </div>
             </div>
-            <!-- サイコロ3 -->
-            <div class="dice" id="dice3">
-                <div class="face front">6</div>
-                <div class="face back">3</div>
-                <div class="face right">0</div>
-                <div class="face left">1</div>
-                <div class="face top">2</div>
-                <div class="face bottom">5</div>
+            <!-- スロットリール2 -->
+            <div class="slot" id="slot1">
+                <div class="slot-inner">
+                    <div class="slot-item">0</div>
+                    <div class="slot-item">1</div>
+                    <div class="slot-item">2</div>
+                    <div class="slot-item">3</div>
+                    <div class="slot-item">4</div>
+                    <div class="slot-item">5</div>
+                </div>
             </div>
-            <!-- サイコロ6 -->
-            <div class="dice" id="dice6">
-                <div class="face front">1</div>
-                <div class="face back">0</div>
-                <div class="face right">6</div>
-                <div class="face left">3</div>
-                <div class="face top">2</div>
-                <div class="face bottom">5</div>
+            <!-- スロットリール3 -->
+            <div class="slot" id="slot2">
+                <div class="slot-inner">
+                    <div class="slot-item">0</div>
+                    <div class="slot-item">1</div>
+                    <div class="slot-item">2</div>
+                    <div class="slot-item">3</div>
+                    <div class="slot-item">4</div>
+                    <div class="slot-item">5</div>
+                </div>
             </div>
         </div>
+        <button class="spin-button" id="spinButton">スピン</button>
     </div>
 
     <!-- Flash Image -->
     <img src="osm.png" alt="Osm Image" class="flash-image" id="flashImage">
 
     <script>
-        // サイコロの要素を取得
-        const dice0 = document.getElementById('dice0');
-        const dice3 = document.getElementById('dice3');
-        const dice6 = document.getElementById('dice6');
+        // スロットの要素を取得
+        const slots = [
+            document.getElementById('slot0'),
+            document.getElementById('slot1'),
+            document.getElementById('slot2')
+        ];
+        const spinButton = document.getElementById('spinButton');
         const flashImage = document.getElementById('flashImage');
 
-        // サイコロの順序と目のリスト
-        const diceOrder = [dice0, dice3, dice6];
-        const desiredNumbers = ['0', '3', '6'];
-        let currentStopIndex = 0;
-        let isRolling = false;
-        let isSuccess = false;
+        let isSpinning = false;
+        let results = [];
 
-        // サイコロごとの回転クラス
-        const rotationClasses = {
-            'dice0': {
-                '0': 'dice0-face0',
-                '3': 'dice0-face3',
-                '6': 'dice0-face6',
-                '1': 'dice0-face1',
-                '2': 'dice0-face2',
-                '5': 'dice0-face5'
-            },
-            'dice3': {
-                '6': 'dice3-face6',
-                '3': 'dice3-face3',
-                '0': 'dice3-face0',
-                '1': 'dice3-face1',
-                '2': 'dice3-face2',
-                '5': 'dice3-face5'
-            },
-            'dice6': {
-                '1': 'dice6-face1',
-                '0': 'dice6-face0',
-                '3': 'dice6-face3',
-                '6': 'dice6-face6',
-                '2': 'dice6-face2',
-                '5': 'dice6-face5'
-            }
-        };
+        // スロットをスピンする関数
+        function spinSlots() {
+            if (isSpinning) return;
+            isSpinning = true;
+            results = [];
 
-        // サイコロを停止する関数
-        function stopDice(dice, number) {
-            dice.classList.add('stop');
+            spinButton.disabled = true;
+            spinButton.textContent = 'スピニング...';
 
-            // 既存の回転クラスを削除
-            const diceId = dice.id;
-            for (let key in rotationClasses[diceId]) {
-                dice.classList.remove(rotationClasses[diceId][key]);
-            }
+            slots.forEach((slot, index) => {
+                const slotInner = slot.querySelector('.slot-inner');
+                const totalItems = slotInner.children.length;
+                const randomOffset = Math.floor(Math.random() * totalItems) + totalItems * 3; // 3回転以上
 
-            // 新しい回転クラスを追加
-            const newClass = rotationClasses[diceId][number];
-            if (newClass) {
-                dice.classList.add(newClass);
-            } else {
-                // 万が一指定された数字が存在しない場合、ランダムに設定
-                const randomKeys = Object.keys(rotationClasses[diceId]);
-                const randomKey = randomKeys[Math.floor(Math.random() * randomKeys.length)];
-                dice.classList.add(rotationClasses[diceId][randomKey]);
-            }
+                const translateY = -150 * randomOffset; // アイテムの高さが150pxの場合
+                slotInner.style.transition = 'transform 2s cubic-bezier(0.25, 1, 0.5, 1)';
+                slotInner.style.transform = `translateY(${translateY}px)`;
+
+                // 終了後の処理
+                slotInner.addEventListener('transitionend', function handler() {
+                    slotInner.removeEventListener('transitionend', handler);
+                    // 現在表示されているアイテムを計算
+                    const finalTransform = getComputedStyle(slotInner).transform;
+                    const matrix = finalTransform.match(/matrix.*\((.+)\)/);
+                    if (matrix) {
+                        const values = matrix[1].split(', ');
+                        const translateYValue = parseFloat(values[5]);
+                        const stoppedIndex = Math.abs(Math.round(translateYValue / 150)) % totalItems;
+                        const result = slotInner.children[stoppedIndex].textContent;
+                        results[index] = result;
+                    }
+                    // 全てのスロットが停止したら結果をチェック
+                    if (results.length === slots.length && !results.includes(undefined)) {
+                        checkResult();
+                    }
+                });
+            });
         }
 
         // 結果をチェックする関数
         function checkResult() {
-            const results = diceOrder.map(dice => {
-                return dice.querySelector('.front').textContent;
-            });
+            const combinedResult = results.join('');
+            console.log('結果:', results);
 
-            // 0-3-6の順番かどうかを確認
-            const isSuccessResult = results.join('') === '036';
-
-            if (isSuccess && isSuccessResult) {
+            if (combinedResult === '036') { // 0-3-6 の組み合わせ
                 flashImage.style.display = 'block';
                 setTimeout(() => {
                     flashImage.style.display = 'none'; // 画像を非表示にする
@@ -349,85 +293,15 @@
                 }, 2000); // 2秒後にリダイレクト
             } else {
                 alert('なんぼでも挑戦可能！狙うはあの数字？');
-                resetDice();
             }
-            isRolling = false;
+
+            isSpinning = false;
+            spinButton.disabled = false;
+            spinButton.textContent = 'スピン';
         }
 
-        // サイコロをリセットする関数
-        function resetDice() {
-            diceOrder.forEach(dice => {
-                dice.classList.remove('stop');
-                const diceId = dice.id;
-                for (let key in rotationClasses[diceId]) {
-                    dice.classList.remove(rotationClasses[diceId][key]);
-                }
-                dice.style.transform = 'rotateX(0deg) rotateY(0deg)';
-                // サイコロの回転アニメーションを再開
-                dice.classList.remove('stop');
-            });
-            currentStopIndex = 0;
-            isSuccess = false;
-        }
-
-        // サイコロをロールする関数
-        function rollDice() {
-            if (isRolling || currentStopIndex >= diceOrder.length) return;
-            isRolling = true;
-
-            // 最初のクリックで成功か失敗かを決定
-            if (currentStopIndex === 0) {
-                const successChance = Math.random();
-                if (successChance <= 0.036) { // 3.6%の成功確率
-                    isSuccess = true;
-                } else {
-                    isSuccess = false;
-                }
-            }
-
-            const dice = diceOrder[currentStopIndex];
-            const diceId = dice.id;
-            let desiredNumber = null;
-
-            if (isSuccess) {
-                desiredNumber = desiredNumbers[currentStopIndex];
-            } else {
-                desiredNumber = Math.floor(Math.random() * 7).toString(); // 0から6のランダムな数字
-            }
-
-            // 数字を設定
-            const frontFace = dice.querySelector('.front');
-            frontFace.textContent = desiredNumber;
-
-            // サイコロを停止
-            stopDice(dice, desiredNumber);
-
-            currentStopIndex++;
-
-            // 全てのサイコロが停止したら結果をチェック
-            if (currentStopIndex === diceOrder.length) {
-                setTimeout(checkResult, 1000); // 1秒後に判定（アニメーションが終了するまで待つ）
-            } else {
-                isRolling = false;
-            }
-        }
-
-        // ユーザーがサイコロをクリックしたときの処理
-        function handleDiceClick(event) {
-            if (isRolling) return; // ロール中は無効化
-            const clickedDice = event.currentTarget;
-            const expectedDice = diceOrder[currentStopIndex];
-            if (clickedDice !== expectedDice) {
-                alert('左から順にサイコロをタップしてください！');
-                return;
-            }
-            rollDice();
-        }
-
-        // サイコロにクリックイベントを追加
-        diceOrder.forEach(dice => {
-            dice.addEventListener('click', handleDiceClick);
-        });
+        // スピンボタンにクリックイベントを追加
+        spinButton.addEventListener('click', spinSlots);
     </script>
 
 </body>
