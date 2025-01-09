@@ -9,7 +9,6 @@
     body {
       margin: 0;
       padding: 0;
-      /* overflow: hidden; ←削除でスクロールできるようにしてもOK */
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       font-family: 'Roboto', sans-serif;
       color: #ffffff;
@@ -52,10 +51,10 @@
     /* ===== リール本体 ===== */
     .slot {
       width: 100px;
-      height: 150px; /* リール表示枠の高さ */
+      height: 150px;        /* リール可視部分の高さ */
       border: 5px solid #fff;
       border-radius: 10px;
-      overflow: hidden;  /* リールの範囲外は隠す → 棒状に揺れるのを防ぐ */
+      overflow: hidden;     /* リール枠外を非表示にする */
       position: relative;
       background: #000;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -69,7 +68,6 @@
       /* 6アイテム × 150px = 900px */
       height: 900px;
       transition: transform 0.5s ease-out; 
-      /* 回転終了時のスムーズな停止演出 */
     }
 
     .slot-item {
@@ -93,7 +91,7 @@
       border-radius: 50%;
       position: absolute;
       left: 50%;
-      bottom: -50px; /* 枠より少し下に配置 */
+      bottom: -40px; /* リール枠の下(40px程度)に配置 */
       transform: translateX(-50%);
       cursor: pointer;
       transition: transform 0.2s;
@@ -170,7 +168,7 @@
       opacity: 0.0;
       display: none;
       animation: blink 0.2s infinite;
-      z-index: 999; /* 画像を最前面に */
+      z-index: 999;
       max-width: 200px;
       max-height: 200px;
       border-radius: 10px;
@@ -180,7 +178,7 @@
       25%, 75% { opacity: 1; }
     }
 
-    /* ===== レスポンシブ対応 ===== */
+    /* ===== レスポンシブ対応 (画面幅600px以下のとき) ===== */
     @media (max-width: 600px) {
       .slot-container {
         gap: 10px;
@@ -235,8 +233,10 @@
         <div class="slot-item">4</div>
         <div class="slot-item">5</div>
       </div>
+      <!-- 赤い停止ボタン -->
       <div class="stop-button" id="stop0"></div>
     </div>
+
     <!-- リール2 -->
     <div class="slot" id="slot1">
       <div class="slot-inner">
@@ -247,8 +247,10 @@
         <div class="slot-item">4</div>
         <div class="slot-item">5</div>
       </div>
+      <!-- 赤い停止ボタン -->
       <div class="stop-button" id="stop1"></div>
     </div>
+
     <!-- リール3 -->
     <div class="slot" id="slot2">
       <div class="slot-inner">
@@ -256,20 +258,19 @@
         <div class="slot-item">1</div>
         <div class="slot-item">2</div>
         <div class="slot-item">3</div>
-        <div class="slot-item">6</div> <!-- 6を入れておく -->
+        <div class="slot-item">6</div> <!-- "6"を必ず入れる -->
         <div class="slot-item">5</div>
       </div>
+      <!-- 赤い停止ボタン -->
       <div class="stop-button" id="stop2"></div>
     </div>
   </div>
 
-  <!-- 当たり演出用画像 -->
+  <!-- 当たり演出用画像 (任意の画像に変更可) -->
   <img src="osm.png" alt="Osm Image" class="flash-image" id="flashImage" />
 
   <script>
-    // ==============================
-    // ① リール・ストップボタンの取得
-    // ==============================
+    // ========① リール＆ボタンの取得========
     const slots = [
       document.getElementById('slot0'),
       document.getElementById('slot1'),
@@ -281,84 +282,73 @@
       document.getElementById('stop2')
     ];
 
-    // ==============================
-    // ② レバー・演出要素など
-    // ==============================
+    // ========② レバー・演出など========
     const lever = document.getElementById('lever');
     const flashImage = document.getElementById('flashImage');
     const challengeCountEl = document.getElementById('challengeCount');
 
-    // ==============================
-    // ③ ステート変数
-    // ==============================
-    let isSpinning = false;            // スロットが現在回転中かどうか
-    let results = [null, null, null];  // 各リールが停止したときの数字
-    const reelHeight = 150;            // 1コマの高さ
-    const reelItems = 6;               // 各リールに6コマ
-    let spinIntervals = [null, null, null]; // setInterval保持用
-    const currentPositions = [0, 0, 0];      // 各リールの現在コマ位置(0~5)
+    // ========③ ステート管理========
+    let isSpinning = false;
+    let results = [null, null, null];
+    const reelHeight = 150;  // 1コマの高さ(PC時)
+    const reelItems = 6;     // コマ数(0～5)
+    let spinIntervals = [null, null, null];
+    const currentPositions = [0, 0, 0];
 
-    // ==============================
-    // ④ localStorageで挑戦回数を保持
-    // ==============================
+    // ========④ localStorageで挑戦回数を保持========
     let challengeCount = parseInt(localStorage.getItem('challengeCount') || '0', 10);
     challengeCountEl.textContent = challengeCount;
 
-    // ==============================
-    // ⑤ レバー操作（回転開始）
-    // ==============================
+    // ========⑤ レバー操作(回転開始)========
     lever.addEventListener('click', () => {
-      if (isSpinning) return; // 回転中なら無視
-      lever.classList.add('pull'); // レバー引くアニメ
+      if (isSpinning) return;
+      lever.classList.add('pull'); // レバーを引くアニメ
 
       startSpinning();
 
-      // 0.5秒後にクラスを外す（レバーを元に戻す）
+      // 0.5秒後にレバーを戻す
       setTimeout(() => {
         lever.classList.remove('pull');
       }, 500);
     });
 
     // -----------------------------
-    //   回転開始
+    //   回転開始処理
     // -----------------------------
     function startSpinning() {
       isSpinning = true;
       results = [null, null, null];
 
-      // 挑戦回数を +1 し、保存
+      // 挑戦回数 +1 して localStorageに保存
       challengeCount++;
       challengeCountEl.textContent = challengeCount;
       localStorage.setItem('challengeCount', challengeCount.toString());
 
-      // ストップボタンを有効化して表示
+      // ストップボタンを有効化・表示
       stopButtons.forEach((btn) => {
         btn.style.display = 'block';
         btn.disabled = false;
       });
 
-      // 各リールをぐるぐる回す
+      // リールを回す (setInterval)
       slots.forEach((slot, index) => {
         const slotInner = slot.querySelector('.slot-inner');
 
-        // もし既に動作中なら停止
+        // もし回転中なら停止
         if (spinIntervals[index]) {
           clearInterval(spinIntervals[index]);
         }
 
-        // setIntervalで高速回転 (30msごとに1コマ進む)
+        // コマを次々切り替える(30msごと)
         spinIntervals[index] = setInterval(() => {
           currentPositions[index] = (currentPositions[index] + 1) % reelItems;
-          // ↑ 0→1→2→3→4→5→0→... とコマが変化
           slotInner.style.transform = 
             `translateY(${-reelHeight * currentPositions[index]}px)`;
         }, 30);
       });
     }
 
-    // ==============================
-    // ⑥ リール停止
-    // ==============================
+    // ========⑥ リール停止========
     function stopReel(i) {
       if (!isSpinning || results[i] !== null) return;
 
@@ -366,39 +356,37 @@
       clearInterval(spinIntervals[i]);
       spinIntervals[i] = null;
 
-      // 既に currentPositions[i] にコマ位置があるので、そのまま停止
+      // 今のコマ位置でストップ
       const stopPos = currentPositions[i];
       results[i] = slots[i].querySelector('.slot-inner')
                    .children[stopPos].textContent;
 
-      // 停止アニメ (スムーズに止まる)
+      // スムーズに止まる演出
       const slotInner = slots[i].querySelector('.slot-inner');
       slotInner.style.transition = 'transform 0.7s ease-out';
       slotInner.style.transform = 
         `translateY(${-reelHeight * stopPos}px)`;
 
-      // ストップボタンを無効化
+      // このストップボタンを無効化
       stopButtons[i].disabled = true;
 
-      // 全てのリールが停止したら結果をチェック
+      // 3リール全て止まったら結果チェック
       if (results.every((val) => val !== null)) {
         checkResult();
       }
     }
 
-    // ストップボタンにイベント付与
+    // ストップボタンにクリックイベント付与
     stopButtons.forEach((btn, i) => {
       btn.addEventListener('click', () => stopReel(i));
     });
 
-    // ==============================
-    // ⑦ 結果判定
-    // ==============================
+    // ========⑦ 結果判定========
     function checkResult() {
       const combined = results.join('');
       console.log('結果:', combined);
 
-      // 当たり判定: 左から 0,3,6
+      // 左から "0,3,6" なら当たり
       if (combined === '036') {
         // 大当たり演出
         slots.forEach((s) => s.classList.add('hit-flash'));
