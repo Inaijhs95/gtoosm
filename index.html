@@ -9,10 +9,10 @@
     body {
       margin: 0;
       padding: 0;
+      /* overflow: hidden; ←削除またはコメントアウト */
       background: linear-gradient(135deg, #1e3c72, #2a5298);
       font-family: 'Roboto', sans-serif;
       color: #ffffff;
-      overflow: hidden; 
       height: 100vh;
       display: flex;
       justify-content: center;
@@ -55,7 +55,8 @@
       height: 150px;
       border: 5px solid #fff;
       border-radius: 10px;
-      overflow: hidden;
+      /* overflow: hidden; ←ココを visible に変更 */
+      overflow: visible;
       position: relative;
       background: #000;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
@@ -92,12 +93,14 @@
       border-radius: 50%;
       position: absolute;
       left: 50%;
-      bottom: -60px;
+      /* bottom: -60px; ← 画面に合わせて調整
+         例: -40px, 0, etc. */
+      bottom: -50px;
       transform: translateX(-50%);
       cursor: pointer;
       transition: transform 0.2s;
       display: none; /* 回転開始時に表示 */
-      z-index: 2;
+      z-index: 999;  /* 他の要素に隠れないよう大きめに */
     }
     .stop-button:hover {
       transform: translateX(-50%) scale(1.1);
@@ -198,7 +201,7 @@
       .stop-button {
         width: 30px;
         height: 30px;
-        bottom: -40px;
+        bottom: -40px; /* 位置を調整 */
       }
       .lever {
         left: -50px;
@@ -255,14 +258,14 @@
         <div class="slot-item">1</div>
         <div class="slot-item">2</div>
         <div class="slot-item">3</div>
-        <div class="slot-item">6</div><!-- ここに 6 を入れておく -->
+        <div class="slot-item">6</div>
         <div class="slot-item">5</div>
       </div>
       <div class="stop-button" id="stop2"></div>
     </div>
   </div>
 
-  <!-- 当たり演出用画像 (お好きな画像に差し替えてOK) -->
+  <!-- 当たり演出用画像 -->
   <img src="osm.png" alt="Osm Image" class="flash-image" id="flashImage" />
 
   <script>
@@ -307,8 +310,8 @@
     // ⑤ レバー操作（回転開始）
     // ==============================
     lever.addEventListener('click', () => {
-      if (isSpinning) return;          // 回転中なら無視
-      lever.classList.add('pull');     // レバーを引くアニメ
+      if (isSpinning) return; // 回転中なら無視
+      lever.classList.add('pull'); // レバー引くアニメ
 
       startSpinning();
 
@@ -348,9 +351,8 @@
         // setIntervalで高速回転
         spinIntervals[index] = setInterval(() => {
           currentPositions[index] = (currentPositions[index] + 1) % reelItems;
-          slotInner.style.transform = 
-            `translateY(${-reelHeight * currentPositions[index]}px)`;
-        }, 50); // 30msごとに1コマ進める → 高速
+          slotInner.style.transform = `translateY(${-reelHeight * currentPositions[index]}px)`;
+        }, 30); // 30msごとに1コマ進める → 高速
       });
     }
 
