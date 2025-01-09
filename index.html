@@ -350,7 +350,7 @@
           currentPositions[index] = (currentPositions[index] + 1) % reelItems;
           slotInner.style.transform = 
             `translateY(${-reelHeight * currentPositions[index]}px)`;
-        }, 30); // 30msごとに1コマ進める → 高速
+        }, 50); // 30msごとに1コマ進める → 高速
       });
     }
 
