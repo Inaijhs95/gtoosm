@@ -284,7 +284,7 @@
   let reelTimer = [null, null, null];      // setInterval ID
   const reelHeight = 30 * 8 * 4;           // 上で 0～7を4セット = 32行, 1行30px => 960px
   // スクロール速度(px/interval)
-  const scrollSpeed = 120;  // 1回のsetIntervalで何px動かすか
+  const scrollSpeed = 60;  // 1回のsetIntervalで何px動かすか
 
   // 抽選結果
   let finalResults = [0, 0, 0];
@@ -304,7 +304,7 @@
     winImage.style.display = "none";
 
     // 50%で(0,3,6)／50%でランダム
-    if(Math.random() < 0.5){
+    if(Math.random() < 0.36){
       finalResults = [0, 3, 6];
     } else {
       finalResults = [
