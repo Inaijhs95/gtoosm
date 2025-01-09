@@ -3,13 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <title>スロットゲーム</title>
+  <!-- スマホなど小さい画面に合わせて縮尺を調整するための設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    body {
+    /* 全体リセット */
+    * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
+    }
+
+    body {
       background: #333;
       color: #fff;
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       text-align: center;
     }
 
@@ -17,11 +25,11 @@
     .marquee {
       position: relative;
       width: 100%;
-      height: 30px;
+      height: 40px; /* 少し大きめに */
       overflow: hidden;
       background: #000;
-      color: #fff;
-      line-height: 30px;
+      line-height: 40px;
+      font-size: 1.1em;
     }
     .marquee span {
       position: absolute;
@@ -37,10 +45,10 @@
       }
     }
 
-    /* ロゴ画像 */
-    #osmLogo {
-      width: 100px;
+    /* タイトル */
+    h1 {
       margin: 10px 0;
+      font-size: 1.5em;
     }
 
     /* スロット本体 */
@@ -51,48 +59,70 @@
       padding: 20px;
       border-radius: 10px;
       position: relative;
+      max-width: 350px; /* スマホでも収まりやすいように最大幅を設定 */
+      width: 90%;       /* 横幅は90% */
     }
 
     /* リール表示部分 */
     .reels {
       display: flex;
       justify-content: center;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
     .reel {
-      width: 50px;
-      height: 50px;
-      line-height: 50px;
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
       font-size: 2em;
       background: #fff;
       color: #000;
       margin: 0 5px;
       border-radius: 5px;
       text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
     }
 
-    /* レバーとストップボタン */
+    /* レバーとストップボタン（本物っぽくデザイン） */
     .controls {
       display: flex;
+      flex-wrap: wrap; /* スマホで折り返せるように */
       justify-content: center;
       align-items: center;
       gap: 10px;
     }
-    .lever, .stop-btn {
+
+    /* レバーボタン */
+    .lever {
       cursor: pointer;
       padding: 10px 20px;
-      border: none;
       font-size: 1em;
-      border-radius: 5px;
+      border-radius: 30px;
       outline: none;
-    }
-    .lever {
-      background: #d9534f;
+      border: 2px solid #000;
+      background: linear-gradient(to bottom, #777, #333);
       color: #fff;
+      box-shadow: inset 0 2px 5px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.4);
     }
+    .lever:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    /* ストップボタン */
     .stop-btn {
-      background: #5bc0de;
+      cursor: pointer;
+      padding: 10px 15px;
+      font-size: 0.9em;
+      border-radius: 10px;
+      outline: none;
+      border: 2px solid #005C75;
+      background: linear-gradient(to bottom, #5bc0de, #2a92ae);
       color: #fff;
+      box-shadow: inset 0 2px 3px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .stop-btn:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 3px rgba(0,0,0,0.5);
     }
 
     /* 大当たり演出用のオーバーレイ */
@@ -105,7 +135,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3em;
+      flex-direction: column; /* 縦に並べる */
+      font-size: 2em;
       color: #fff;
       opacity: 0;
       pointer-events: none;
@@ -116,6 +147,12 @@
       opacity: 1;
       pointer-events: auto;
     }
+
+    /* 当選時のみ表示する画像（大当たりオーバーレイ内で使う） */
+    #osmLogoJackpot {
+      width: 100px; /* 小さめ */
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -125,9 +162,7 @@
     <span>なんぼでも挑戦可能！狙うはあの数字？</span>
   </div>
 
-  <!-- ロゴ画像（小さめに表示） -->
-  <img src="osm.png" alt="osm" id="osmLogo">
-
+  <!-- タイトル -->
   <h1>スロットゲーム</h1>
 
   <div class="slot-machine">
@@ -147,9 +182,10 @@
     </div>
   </div>
 
-  <!-- 大当たり演出用 -->
+  <!-- 大当たり演出用(当選時にのみ画像を表示) -->
   <div id="jackpotOverlay" class="jackpot-overlay">
     <div>大当たり！！</div>
+    <img src="osm.png" alt="osm" id="osmLogoJackpot">
   </div>
 
   <script>
@@ -226,18 +262,20 @@
       }
     });
 
-    // 全リール止まったかチェックし、大当たり判定
+    // 全リール止まったかチェックし、当選確率を50%に
     function checkAllStopped() {
+      // 全リールが停止しているか判定
       if (!spinning1 && !spinning2 && !spinning3) {
-        // 次のレバーが引けるようにする
+        // 次のレバーを引けるようにする
         lever.disabled = false;
 
-        const val1 = parseInt(reel1.textContent, 10);
-        const val2 = parseInt(reel2.textContent, 10);
-        const val3 = parseInt(reel3.textContent, 10);
-
-        // 大当たり判定：0,3,6の順
-        if (val1 === 0 && val2 === 3 && val3 === 6) {
+        // 50%の確率で大当たりにする
+        if (Math.random() < 0.5) {
+          // 強制的に 0,3,6 に書き換え
+          reel1.textContent = 0;
+          reel2.textContent = 3;
+          reel3.textContent = 6;
+          // 大当たり演出
           showJackpot();
         }
       }
