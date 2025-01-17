@@ -255,6 +255,25 @@
     #cancelRedirect:hover {
       background-color: #c82333;
     }
+
+    /* 新しいモーダルボタンスタイル */
+    #reportRedirect {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    #reportRedirect:hover {
+      background-color: #0069d9;
+    }
+
+    #continuePlay {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    #continuePlay:hover {
+      background-color: #5a6268;
+    }
   </style>
 </head>
 <body>
@@ -305,14 +324,25 @@
   </div>
 </div>
 
-<!-- 大当たりモーダル -->
+<!-- 大当たりモーダル（0,3,6用） -->
 <div id="jackpotModal" class="modal">
   <div class="modal-content">
     <span class="close-button" id="closeModal">&times;</span>
     <h2>大当たり！</h2>
     <p>おめでとうございます！LINE画面に移動しますか？</p>
-    <button id="confirmRedirect">はい</button>
-    <button id="cancelRedirect">プレイを続ける</button>
+    <button id="confirmRedirect">はい、移動する</button>
+    <button id="cancelRedirect">いいえ、閉じる</button>
+  </div>
+</div>
+
+<!-- 777モーダル -->
+<div id="sevenSevenSevenModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button" id="closeSevenModal">&times;</span>
+    <h2>777おめでとうございます！</h2>
+    <p>主催者に報告しましょう。</p>
+    <button id="reportRedirect">報告する</button>
+    <button id="continuePlay">報告しないでプレイ継続</button>
   </div>
 </div>
 
@@ -323,6 +353,7 @@
       3)  STOP すると、リールの真ん中(約40px)に数字が止まり
          該当数字を太字に
       4)  当たり(0,3,6)ならモーダルポップアップを表示してURLへ飛ぶ
+          当たり(7,7,7)なら別のモーダルを表示して別URLへ飛ぶ
   ------------------------------------------- */
 
   // ----------------------------------------
@@ -423,20 +454,36 @@
   const confirmRedirectButton = document.getElementById('confirmRedirect');
   const cancelRedirectButton = document.getElementById('cancelRedirect');
 
+  const sevenSevenSevenModal = document.getElementById('sevenSevenSevenModal');
+  const closeSevenModalButton = document.getElementById('closeSevenModal');
+  const reportRedirectButton = document.getElementById('reportRedirect');
+  const continuePlayButton = document.getElementById('continuePlay');
+
   // モーダルを表示する関数
   function showJackpotModal() {
     jackpotModal.style.display = 'block';
   }
 
+  function showSevenSevenSevenModal() {
+    sevenSevenSevenModal.style.display = 'block';
+  }
+
   // モーダルを閉じる関数
-  function closeJackpotModal() {
+  function closeJackpotModalFunc() {
     jackpotModal.style.display = 'none';
+  }
+
+  function closeSevenSevenSevenModal() {
+    sevenSevenSevenModal.style.display = 'none';
   }
 
   // モーダルの外側をクリックしたら閉じる
   window.addEventListener('click', function(event) {
     if (event.target == jackpotModal) {
-      closeJackpotModal();
+      closeJackpotModalFunc();
+    }
+    if (event.target == sevenSevenSevenModal) {
+      closeSevenSevenSevenModal();
     }
   });
 
@@ -447,12 +494,21 @@
 
   // キャンセルボタンをクリックしたらモーダルを閉じる
   cancelRedirectButton.addEventListener('click', () => {
-    closeJackpotModal();
+    closeJackpotModalFunc();
   });
 
   // 閉じるボタンをクリックしたらモーダルを閉じる
   closeModalButton.addEventListener('click', () => {
-    closeJackpotModal();
+    closeJackpotModalFunc();
+  });
+
+  // 777モーダルのボタン
+  reportRedirectButton.addEventListener('click', () => {
+    window.location.href = "https://line.me/R/oaMessage/%40778unfqy/777%E5%88%86%E3%81%AE1%E3%81%AE%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81";
+  });
+
+  continuePlayButton.addEventListener('click', () => {
+    closeSevenSevenSevenModal();
   });
 
   // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
@@ -559,7 +615,7 @@
   function checkResult(){
     const [r1, r2, r3] = finalResults;
     if(r1===0 && r2===3 && r3===6){
-      // 大当たり
+      // 0,3,6ジャックポット
       displayMessage.textContent = "036が出ました！";
       winImage.style.display = "block";
       // 回転数リセット
@@ -570,6 +626,19 @@
       // モーダルを表示
       setTimeout(() => {
         showJackpotModal();
+      },2000);
+    } else if(r1===7 && r2===7 && r3===7){
+      // 777ジャックポット
+      displayMessage.textContent = "777が出ました！";
+      winImage.style.display = "block";
+      // 回転数リセット
+      spinCount=0;
+      localStorage.setItem('slotSpinCount', spinCount);
+      updateSpinCountDisplay();
+
+      // 別のモーダルを表示
+      setTimeout(() => {
+        showSevenSevenSevenModal();
       },2000);
     } else {
       displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
