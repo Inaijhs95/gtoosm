@@ -311,8 +311,8 @@
     <span class="close-button" id="closeModal">&times;</span>
     <h2>大当たり！</h2>
     <p>おめでとうございます！LINE画面に移動しますか？</p>
-    <button id="confirmRedirect">はい、移動する</button>
-    <button id="cancelRedirect">いいえ、閉じる</button>
+    <button id="confirmRedirect">はい</button>
+    <button id="cancelRedirect">プレイを続ける</button>
   </div>
 </div>
 
@@ -560,7 +560,7 @@
     const [r1, r2, r3] = finalResults;
     if(r1===0 && r2===3 && r3===6){
       // 大当たり
-      displayMessage.textContent = "おみごと！まもなくモーダルが表示されます。";
+      displayMessage.textContent = "036が出ました！";
       winImage.style.display = "block";
       // 回転数リセット
       spinCount=0;
