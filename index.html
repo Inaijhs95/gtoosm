@@ -184,6 +184,77 @@
     .boldNumber {
       font-weight: bold;
     }
+
+    /* モーダルのスタイル */
+    .modal {
+      display: none; /* 初期状態は非表示 */
+      position: fixed;
+      z-index: 20; /* 他の要素より前面に表示 */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto; /* 必要に応じてスクロール */
+      background-color: rgba(0, 0, 0, 0.7); /* 背景を半透明に */
+    }
+
+    /* モーダルコンテンツ */
+    .modal-content {
+      background-color: #fff;
+      color: #000;
+      margin: 15% auto; /* 縦中央に配置 */
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* 閉じるボタン */
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-button:hover,
+    .close-button:focus {
+      color: #000;
+    }
+
+    /* モーダルボタン */
+    .modal-content button {
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    #confirmRedirect {
+      background-color: #28a745;
+      color: #fff;
+    }
+
+    #confirmRedirect:hover {
+      background-color: #218838;
+    }
+
+    #cancelRedirect {
+      background-color: #dc3545;
+      color: #fff;
+    }
+
+    #cancelRedirect:hover {
+      background-color: #c82333;
+    }
   </style>
 </head>
 <body>
@@ -234,13 +305,24 @@
   </div>
 </div>
 
+<!-- 大当たりモーダル -->
+<div id="jackpotModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button" id="closeModal">&times;</span>
+    <h2>大当たり！</h2>
+    <p>おめでとうございます！LINE画面に移動しますか？</p>
+    <button id="confirmRedirect">はい、移動する</button>
+    <button id="cancelRedirect">いいえ、閉じる</button>
+  </div>
+</div>
+
 <script>
   /* -------------------------------------------
       1)  指を置いた瞬間にレバーが下がり、同時にスロットを回す
       2)  指を離す(またはマウスを離す)まで押し込み状態を維持
       3)  STOP すると、リールの真ん中(約40px)に数字が止まり
          該当数字を太字に
-      4)  当たり(0,3,6)なら確認ダイアログを表示してからURLへ飛ぶ
+      4)  当たり(0,3,6)ならモーダルポップアップを表示してURLへ飛ぶ
   ------------------------------------------- */
 
   // ----------------------------------------
@@ -335,6 +417,44 @@
   // 抽選結果
   let finalResults = [0, 0, 0];
 
+  // モーダル関連の要素を取得
+  const jackpotModal = document.getElementById('jackpotModal');
+  const closeModalButton = document.getElementById('closeModal');
+  const confirmRedirectButton = document.getElementById('confirmRedirect');
+  const cancelRedirectButton = document.getElementById('cancelRedirect');
+
+  // モーダルを表示する関数
+  function showJackpotModal() {
+    jackpotModal.style.display = 'block';
+  }
+
+  // モーダルを閉じる関数
+  function closeJackpotModal() {
+    jackpotModal.style.display = 'none';
+  }
+
+  // モーダルの外側をクリックしたら閉じる
+  window.addEventListener('click', function(event) {
+    if (event.target == jackpotModal) {
+      closeJackpotModal();
+    }
+  });
+
+  // 確認ボタンをクリックしたらLINEにリダイレクト
+  confirmRedirectButton.addEventListener('click', () => {
+    window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
+  });
+
+  // キャンセルボタンをクリックしたらモーダルを閉じる
+  cancelRedirectButton.addEventListener('click', () => {
+    closeJackpotModal();
+  });
+
+  // 閉じるボタンをクリックしたらモーダルを閉じる
+  closeModalButton.addEventListener('click', () => {
+    closeJackpotModal();
+  });
+
   // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
   function startSlotIfNotSpinning() {
     // まだ回転中なら何もしない
@@ -377,34 +497,27 @@
     isSpinning[idx] = true;
     reelPos[idx] = 0;
     const container = [numbers1, numbers2, numbers3][idx];
-    // 既存のanimationFrameがあればキャンセル
-    if(reelTimer[idx]) cancelAnimationFrame(reelTimer[idx]);
+    // 既存のsetIntervalがあればクリア
+    if(reelTimer[idx]) clearInterval(reelTimer[idx]);
 
-    function animate() {
-      if (!isSpinning[idx]) return;
-      reelPos[idx] += scrollSpeed * (1/60); // フレームレートに依存しない速度調整
-      if (reelPos[idx] > reelHeight){
+    reelTimer[idx] = setInterval(() => {
+      reelPos[idx] += scrollSpeed;
+      // モジュロでループ
+      if(reelPos[idx] > reelHeight){
         reelPos[idx] %= reelHeight;
       }
       container.style.transform = `translateY(-${reelPos[idx]}px)`;
-      reelTimer[idx] = requestAnimationFrame(animate);
-    }
-
-    reelTimer[idx] = requestAnimationFrame(animate);
+    }, 20);
   }
 
-  // STOPボタンのイベントリスナーを関数化
-  function addStopButtonListener(idx, btn) {
-    btn.addEventListener('click', () => stopReel(idx, btn));
-  }
-
-  addStopButtonListener(0, stopBtn1);
-  addStopButtonListener(1, stopBtn2);
-  addStopButtonListener(2, stopBtn3);
+  // STOPボタン
+  stopBtn1.addEventListener('click', () => stopReel(0, stopBtn1));
+  stopBtn2.addEventListener('click', () => stopReel(1, stopBtn2));
+  stopBtn3.addEventListener('click', () => stopReel(2, stopBtn3));
 
   function stopReel(idx, btn){
     if(!isSpinning[idx]) return;
-    cancelAnimationFrame(reelTimer[idx]);
+    clearInterval(reelTimer[idx]);
     isSpinning[idx] = false;
     btn.disabled = true;
 
@@ -414,71 +527,49 @@
     const allDivs = container.querySelectorAll('div');
     allDivs.forEach(div => div.classList.remove('boldNumber'));
 
-    // 各数字の位置を計算し、最も近い位置に停止
-    let targetIndex = allDivs.length; // 初期値として最後のインデックスを設定
+    let closestDist = Infinity;
+    let bestOffset = 0;
+    let bestIndex = 0;
+
     for(let i=0; i<allDivs.length; i++){
-      if(parseInt(allDivs[i].textContent, 10) === finalVal){
-        targetIndex = i;
-        break; // 最初に見つけた位置に合わせる
-      }
-    }
-
-    // 目標位置を計算
-    const targetOffset = targetIndex * 30;
-    // 調整して中央に表示
-    const desiredPos = targetOffset - 25; // 25pxは中央に表示するための調整値
-
-    // アニメーションを滑らかに停止
-    const totalSteps = 30; // フレーム数
-    let currentStep = 0;
-    const initialPos = reelPos[idx];
-    const delta = desiredPos - initialPos;
-
-    function smoothStop() {
-      currentStep++;
-      const progress = currentStep / totalSteps;
-      const easeProgress = easeOutCubic(progress);
-      reelPos[idx] = initialPos + delta * easeProgress;
-      container.style.transform = `translateY(-${reelPos[idx]}px)`;
-
-      if(currentStep < totalSteps){
-        reelTimer[idx] = requestAnimationFrame(smoothStop);
-      } else {
-        // 確実に目標位置に設定
-        reelPos[idx] = desiredPos % reelHeight;
-        container.style.transform = `translateY(-${reelPos[idx]}px)`;
-        allDivs[targetIndex].classList.add('boldNumber');
-
-        // 全停止したら結果判定
-        if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
-          checkResult();
+      const num = parseInt(allDivs[i].textContent,10);
+      if(num===finalVal){
+        const desiredOffset = i*30 - 25; // (真ん中40px付近に行を合わせる)
+        const dist = Math.abs(desiredOffset - reelPos[idx]);
+        if(dist < closestDist){
+          closestDist = dist;
+          bestOffset = desiredOffset;
+          bestIndex = i;
         }
       }
     }
+    function modInRange(x, range){
+      return ((x%range)+range)%range;
+    }
+    reelPos[idx] = modInRange(bestOffset, reelHeight);
+    container.style.transform = `translateY(-${reelPos[idx]}px)`;
+    allDivs[bestIndex].classList.add('boldNumber');
 
-    reelTimer[idx] = requestAnimationFrame(smoothStop);
-  }
-
-  // イージング関数（滑らかな停止のため）
-  function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+    // 全停止したら結果判定
+    if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
+      checkResult();
+    }
   }
 
   function checkResult(){
     const [r1, r2, r3] = finalResults;
     if(r1===0 && r2===3 && r3===6){
       // 大当たり
-      displayMessage.textContent = "おみごと！まもなくLINE画面を表示します。";
+      displayMessage.textContent = "おみごと！まもなくモーダルが表示されます。";
       winImage.style.display = "block";
       // 回転数リセット
       spinCount=0;
       localStorage.setItem('slotSpinCount', spinCount);
       updateSpinCountDisplay();
 
+      // モーダルを表示
       setTimeout(() => {
-        if(confirm("大当たり！LINE画面に移動しますか？")){
-          window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
-        }
+        showJackpotModal();
       },2000);
     } else {
       displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
