@@ -240,7 +240,7 @@
       2)  指を離す(またはマウスを離す)まで押し込み状態を維持
       3)  STOP すると、リールの真ん中(約40px)に数字が止まり
          該当数字を太字に
-      4)  当たり(0,3,6)なら2秒後にURLへ飛ぶ
+      4)  当たり(0,3,6)なら確認ダイアログを表示してからURLへ飛ぶ
   ------------------------------------------- */
 
   // ----------------------------------------
@@ -377,27 +377,34 @@
     isSpinning[idx] = true;
     reelPos[idx] = 0;
     const container = [numbers1, numbers2, numbers3][idx];
-    // 既存のsetIntervalがあればクリア
-    if(reelTimer[idx]) clearInterval(reelTimer[idx]);
+    // 既存のanimationFrameがあればキャンセル
+    if(reelTimer[idx]) cancelAnimationFrame(reelTimer[idx]);
 
-    reelTimer[idx] = setInterval(() => {
-      reelPos[idx] += scrollSpeed;
-      // モジュロでループ
-      if(reelPos[idx] > reelHeight){
+    function animate() {
+      if (!isSpinning[idx]) return;
+      reelPos[idx] += scrollSpeed * (1/60); // フレームレートに依存しない速度調整
+      if (reelPos[idx] > reelHeight){
         reelPos[idx] %= reelHeight;
       }
       container.style.transform = `translateY(-${reelPos[idx]}px)`;
-    }, 20);
+      reelTimer[idx] = requestAnimationFrame(animate);
+    }
+
+    reelTimer[idx] = requestAnimationFrame(animate);
   }
 
-  // STOPボタン
-  stopBtn1.addEventListener('click', () => stopReel(0, stopBtn1));
-  stopBtn2.addEventListener('click', () => stopReel(1, stopBtn2));
-  stopBtn3.addEventListener('click', () => stopReel(2, stopBtn3));
+  // STOPボタンのイベントリスナーを関数化
+  function addStopButtonListener(idx, btn) {
+    btn.addEventListener('click', () => stopReel(idx, btn));
+  }
+
+  addStopButtonListener(0, stopBtn1);
+  addStopButtonListener(1, stopBtn2);
+  addStopButtonListener(2, stopBtn3);
 
   function stopReel(idx, btn){
     if(!isSpinning[idx]) return;
-    clearInterval(reelTimer[idx]);
+    cancelAnimationFrame(reelTimer[idx]);
     isSpinning[idx] = false;
     btn.disabled = true;
 
@@ -407,33 +414,54 @@
     const allDivs = container.querySelectorAll('div');
     allDivs.forEach(div => div.classList.remove('boldNumber'));
 
-    let closestDist = Infinity;
-    let bestOffset = 0;
-    let bestIndex = 0;
-
+    // 各数字の位置を計算し、最も近い位置に停止
+    let targetIndex = allDivs.length; // 初期値として最後のインデックスを設定
     for(let i=0; i<allDivs.length; i++){
-      const num = parseInt(allDivs[i].textContent,10);
-      if(num===finalVal){
-        const desiredOffset = i*30 - 25; // (真ん中40px付近に行を合わせる)
-        const dist = Math.abs(desiredOffset - reelPos[idx]);
-        if(dist < closestDist){
-          closestDist = dist;
-          bestOffset = desiredOffset;
-          bestIndex = i;
+      if(parseInt(allDivs[i].textContent, 10) === finalVal){
+        targetIndex = i;
+        break; // 最初に見つけた位置に合わせる
+      }
+    }
+
+    // 目標位置を計算
+    const targetOffset = targetIndex * 30;
+    // 調整して中央に表示
+    const desiredPos = targetOffset - 25; // 25pxは中央に表示するための調整値
+
+    // アニメーションを滑らかに停止
+    const totalSteps = 30; // フレーム数
+    let currentStep = 0;
+    const initialPos = reelPos[idx];
+    const delta = desiredPos - initialPos;
+
+    function smoothStop() {
+      currentStep++;
+      const progress = currentStep / totalSteps;
+      const easeProgress = easeOutCubic(progress);
+      reelPos[idx] = initialPos + delta * easeProgress;
+      container.style.transform = `translateY(-${reelPos[idx]}px)`;
+
+      if(currentStep < totalSteps){
+        reelTimer[idx] = requestAnimationFrame(smoothStop);
+      } else {
+        // 確実に目標位置に設定
+        reelPos[idx] = desiredPos % reelHeight;
+        container.style.transform = `translateY(-${reelPos[idx]}px)`;
+        allDivs[targetIndex].classList.add('boldNumber');
+
+        // 全停止したら結果判定
+        if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
+          checkResult();
         }
       }
     }
-    function modInRange(x, range){
-      return ((x%range)+range)%range;
-    }
-    reelPos[idx] = modInRange(bestOffset, reelHeight);
-    container.style.transform = `translateY(-${reelPos[idx]}px)`;
-    allDivs[bestIndex].classList.add('boldNumber');
 
-    // 全停止したら結果判定
-    if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
-      checkResult();
-    }
+    reelTimer[idx] = requestAnimationFrame(smoothStop);
+  }
+
+  // イージング関数（滑らかな停止のため）
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
   }
 
   function checkResult(){
@@ -448,7 +476,9 @@
       updateSpinCountDisplay();
 
       setTimeout(() => {
-        window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
+        if(confirm("大当たり！LINE画面に移動しますか？")){
+          window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
+        }
       },2000);
     } else {
       displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
