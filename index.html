@@ -37,7 +37,7 @@
     .slot-display {
       background: #111;
       padding: 10px;
-      height: 100px;
+      height: 120px; /* 高さを調整して通知エリアを追加 */
       border-bottom: 3px solid #000;
       text-align: center;
       position: relative;
@@ -64,7 +64,23 @@
       font-size: 0.95em;
     }
 
-    /* 大当たりPNGは右リール上部あたりに絶対配置 */
+    /* 通知エリア */
+    #notification {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 5px;
+      display: none; /* 初期状態は非表示 */
+      z-index: 15; /* 他の要素より前面に表示 */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      font-size: 1em;
+    }
+
+    /* 大当たり画像（右リール上部あたりに重ね表示） */
     .win-image {
       position: absolute;
       top: 135px;   /* 画面上からの距離（調整可） */
@@ -195,100 +211,17 @@
       font-weight: bold;
     }
 
-    /* モーダルのスタイル */
-    .modal {
-      display: none; /* 初期状態は非表示 */
-      position: fixed;
-      z-index: 20; /* 他の要素より前面に表示 */
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto; /* 必要に応じてスクロール */
-      background-color: rgba(0, 0, 0, 0.7); /* 背景を半透明に */
-    }
+    /* モーダルのスタイル（削除済み） */
+    /* モーダル関連のCSSは不要なので削除またはコメントアウト */
 
-    /* モーダルコンテンツ */
-    .modal-content {
-      background-color: #fff;
-      color: #000;
-      margin: 15% auto; /* 縦中央に配置 */
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      max-width: 400px;
-      border-radius: 10px;
-      text-align: center;
-      position: relative;
-    }
-
-    /* 閉じるボタン */
-    .close-button {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      color: #aaa;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .close-button:hover,
-    .close-button:focus {
-      color: #000;
-    }
-
-    /* モーダルボタン */
-    .modal-content button {
-      margin: 10px;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1em;
-    }
-
-    #confirmRedirect {
-      background-color: #28a745;
-      color: #fff;
-    }
-
-    #confirmRedirect:hover {
-      background-color: #218838;
-    }
-
-    #cancelRedirect {
-      background-color: #dc3545;
-      color: #fff;
-    }
-
-    #cancelRedirect:hover {
-      background-color: #c82333;
-    }
-
-    /* 新しいモーダルボタンスタイル */
-    #reportRedirect {
-      background-color: #007bff;
-      color: #fff;
-    }
-
-    #reportRedirect:hover {
-      background-color: #0069d9;
-    }
-
-    #continuePlay {
-      background-color: #6c757d;
-      color: #fff;
-    }
-
-    #continuePlay:hover {
-      background-color: #5a6268;
-    }
   </style>
 </head>
 <body>
 
 <div class="slot-machine">
+  <!-- 通知エリア -->
+  <div id="notification"></div>
+
   <!-- ディスプレイ -->
   <div class="slot-display">
     <h2>スロットπの秘宝</h2>
@@ -337,27 +270,7 @@
   </div>
 </div>
 
-<!-- 大当たりモーダル（0,3,6用） -->
-<div id="jackpotModal" class="modal">
-  <div class="modal-content">
-    <span class="close-button" id="closeModal">&times;</span>
-    <h2>大当たり！</h2>
-    <p>おめでとうございます！LINE画面に移動しますか？</p>
-    <button id="confirmRedirect">はい、移動する</button>
-    <button id="cancelRedirect">いいえ、閉じる</button>
-  </div>
-</div>
-
-<!-- 777モーダル -->
-<div id="sevenSevenSevenModal" class="modal">
-  <div class="modal-content">
-    <span class="close-button" id="closeSevenModal">&times;</span>
-    <h2>777おめでとうございます！</h2>
-    <p>主催者に報告しましょう。</p>
-    <button id="reportRedirect">報告する</button>
-    <button id="continuePlay">報告しないでプレイ継続</button>
-  </div>
-</div>
+<!-- モーダル関連のHTMLは削除しました -->
 
 <script>
   /* -------------------------------------------
@@ -365,14 +278,15 @@
       2)  指を離す(またはマウスを離す)まで押し込み状態を維持
       3)  STOP すると、リールの真ん中(約40px)に数字が止まり
          該当数字を太字に
-      4)  当たり(0,3,6)ならモーダルポップアップを表示してURLへ飛ぶ
-          当たり(7,7,7)なら別のモーダルを表示して別URLへ飛ぶ
+      4)  当たり(0,3,6)なら通知エリアにメッセージを表示
+          当たり(7,7,7)なら通知エリアにメッセージを表示
   ------------------------------------------- */
 
   // ----------------------------------------
   //  レバー押下演出 & スロット起動
   // ----------------------------------------
   const leverBall = document.getElementById('leverBall');
+  const notification = document.getElementById('notification');
 
   // PCマウス用: mousedown で回転開始
   leverBall.addEventListener('mousedown', e => {
@@ -465,68 +379,32 @@
   // 抽選結果
   let finalResults = [0, 0, 0];
 
-  // モーダル関連の要素を取得
-  const jackpotModal = document.getElementById('jackpotModal');
-  const closeModalButton = document.getElementById('closeModal');
-  const confirmRedirectButton = document.getElementById('confirmRedirect');
-  const cancelRedirectButton = document.getElementById('cancelRedirect');
+  // モーダル関連の要素は削除しました
 
-  const sevenSevenSevenModal = document.getElementById('sevenSevenSevenModal');
-  const closeSevenModalButton = document.getElementById('closeSevenModal');
-  const reportRedirectButton = document.getElementById('reportRedirect');
-  const continuePlayButton = document.getElementById('continuePlay');
+  // 通知を表示する関数
+  function showNotification(message, isCritical=false, redirectURL=null) {
+    notification.innerHTML = ''; // 既存の内容をクリア
+    notification.textContent = message;
 
-  // モーダルを表示する関数
-  function showJackpotModal() {
-    jackpotModal.style.display = 'block';
-  }
+    if(isCritical && redirectURL){
+      // リンクを追加
+      const link = document.createElement('a');
+      link.href = redirectURL;
+      link.textContent = 'ここをクリック';
+      link.style.color = '#007bff';
+      link.style.textDecoration = 'underline';
+      link.style.marginLeft = '10px';
+      link.target = '_blank'; // 新しいタブで開く
 
-  function showSevenSevenSevenModal() {
-    sevenSevenSevenModal.style.display = 'block';
-  }
-
-  // モーダルを閉じる関数
-  function closeJackpotModalFunc() {
-    jackpotModal.style.display = 'none';
-  }
-
-  function closeSevenSevenSevenModal() {
-    sevenSevenSevenModal.style.display = 'none';
-  }
-
-  // モーダルの外側をクリックしたら閉じる
-  window.addEventListener('click', function(event) {
-    if (event.target == jackpotModal) {
-      closeJackpotModalFunc();
+      notification.appendChild(link);
     }
-    if (event.target == sevenSevenSevenModal) {
-      closeSevenSevenSevenModal();
-    }
-  });
 
-  // 確認ボタンをクリックしたらLINEにリダイレクト
-  confirmRedirectButton.addEventListener('click', () => {
-    window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F";
-  });
-
-  // キャンセルボタンをクリックしたらモーダルを閉じる
-  cancelRedirectButton.addEventListener('click', () => {
-    closeJackpotModalFunc();
-  });
-
-  // 閉じるボタンをクリックしたらモーダルを閉じる
-  closeModalButton.addEventListener('click', () => {
-    closeJackpotModalFunc();
-  });
-
-  // 777モーダルのボタン
-  reportRedirectButton.addEventListener('click', () => {
-    window.location.href = "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%96%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81";
-  });
-
-  continuePlayButton.addEventListener('click', () => {
-    closeSevenSevenSevenModal();
-  });
+    notification.style.display = 'block';
+    // 3秒後に自動で非表示
+    setTimeout(() => {
+      notification.style.display = 'none';
+    }, 3000);
+  }
 
   // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
   function startSlotIfNotSpinning() {
@@ -643,10 +521,8 @@
       localStorage.setItem('slotJackpotCount', jackpotCount);
       updateSpinCountDisplay();
 
-      // モーダルを表示
-      setTimeout(() => {
-        showJackpotModal();
-      },2000);
+      // 通知エリアにメッセージを表示
+      showNotification("036が出ました！おめでとうございます！", false);
     } else if(r1===7 && r2===7 && r3===7){
       // [7,7,7]ジャックポット
       displayMessage.textContent = "777が出ました！";
@@ -656,14 +532,13 @@
       localStorage.setItem('slotSpinCount', spinCount);
       updateSpinCountDisplay();
 
-      // 別のモーダルを表示
-      setTimeout(() => {
-        showSevenSevenSevenModal();
-      },2000);
+      // 通知エリアにメッセージとリンクを表示
+      showNotification("777が出ました！主催者に報告しましょう。", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
     } else {
       displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
     }
   }
+
 </script>
 </body>
 </html>
