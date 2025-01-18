@@ -16,9 +16,28 @@
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       display: flex;
-      justify-content: center;
+      flex-direction: column; /* 通知エリアとスロットマシンを縦に並べる */
       align-items: center;
+      justify-content: center;
       min-height: 100vh;
+    }
+
+    /* 通知エリア */
+    #notification {
+      position: fixed; /* 画面上部に固定 */
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255, 255, 255, 0.95);
+      color: #000;
+      padding: 15px 25px;
+      border-radius: 8px;
+      display: none; /* 初期状態は非表示 */
+      z-index: 100; /* 他の要素より前面に表示 */
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-size: 1em;
+      max-width: 90%;
+      text-align: center;
     }
 
     /* スロット台 */
@@ -47,8 +66,8 @@
       align-items: center;
     }
     .slot-display h2 {
-      font-size: 1.2em;
-      margin-bottom: 4px;
+      font-size: 1.5em;
+      margin-bottom: 8px;
     }
     #spinCountContainer {
       display: flex;
@@ -57,27 +76,12 @@
       margin-bottom: 5px;
     }
     #spinCountText, #jackpotCountText {
-      font-size: 0.9em;
+      font-size: 1em;
     }
     #displayMessage {
       min-height: 20px;
-      font-size: 0.95em;
-    }
-
-    /* 通知エリア */
-    #notification {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(255, 255, 255, 0.9);
-      color: #000;
-      padding: 10px 20px;
-      border-radius: 5px;
-      display: none; /* 初期状態は非表示 */
-      z-index: 15; /* 他の要素より前面に表示 */
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
       font-size: 1em;
+      margin-top: 5px;
     }
 
     /* 大当たり画像（右リール上部あたりに重ね表示） */
@@ -211,334 +215,329 @@
       font-weight: bold;
     }
 
-    /* モーダルのスタイル（削除済み） */
-    /* モーダル関連のCSSは不要なので削除またはコメントアウト */
-
   </style>
 </head>
 <body>
 
-<div class="slot-machine">
   <!-- 通知エリア -->
   <div id="notification"></div>
 
-  <!-- ディスプレイ -->
-  <div class="slot-display">
-    <h2>スロットπの秘宝</h2>
-    <div id="spinCountContainer">
-      <div id="spinCountText">回転数：0</div>
-      <div id="jackpotCountText">当選回数：0</div>
+  <div class="slot-machine">
+    <!-- ディスプレイ -->
+    <div class="slot-display">
+      <h2>スロットπの秘宝</h2>
+      <div id="spinCountContainer">
+        <div id="spinCountText">回転数：0</div>
+        <div id="jackpotCountText">当選回数：0</div>
+      </div>
+      <div id="displayMessage">なんぼでも挑戦可能！狙うはあの数字？</div>
     </div>
-    <div id="displayMessage">なんぼでも挑戦可能！狙うはあの数字？</div>
+
+    <!-- 大当たり画像（右リール上部あたりに重ね表示） -->
+    <img src="osm.png" alt="Win Image" class="win-image" id="winImage">
+
+    <!-- 本体下部：レバー + (リール+ストップ)×3 -->
+    <div class="machine-body">
+      <!-- レバー -->
+      <div class="lever-container">
+        <div class="lever-shaft"></div>
+        <div class="lever-ball" id="leverBall"></div>
+      </div>
+
+      <!-- リール&STOPを3セット横並び -->
+      <div class="reels-stop-area">
+        <!-- 1番リール -->
+        <div class="reel-stop">
+          <div class="reel" id="reel1">
+            <div class="numbers" id="numbers1"></div>
+          </div>
+          <button class="stop-btn" id="stop1" disabled>STOP</button>
+        </div>
+        <!-- 2番リール -->
+        <div class="reel-stop">
+          <div class="reel" id="reel2">
+            <div class="numbers" id="numbers2"></div>
+          </div>
+          <button class="stop-btn" id="stop2" disabled>STOP</button>
+        </div>
+        <!-- 3番リール -->
+        <div class="reel-stop">
+          <div class="reel" id="reel3">
+            <div class="numbers" id="numbers3"></div>
+          </div>
+          <button class="stop-btn" id="stop3" disabled>STOP</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- 大当たり画像（右リール上部あたりに重ね表示） -->
-  <img src="osm.png" alt="Win Image" class="win-image" id="winImage">
+  <script>
+    /* -------------------------------------------
+        1)  指を置いた瞬間にレバーが下がり、同時にスロットを回す
+        2)  指を離す(またはマウスを離す)まで押し込み状態を維持
+        3)  STOP すると、リールの真ん中(約40px)に数字が止まり
+           該当数字を太字に
+        4)  当たり(0,3,6)なら通知エリアにメッセージを表示
+            当たり(7,7,7)なら通知エリアにメッセージとリンクを表示
+    ------------------------------------------- */
 
-  <!-- 本体下部：レバー + (リール+ストップ)×3 -->
-  <div class="machine-body">
-    <!-- レバー -->
-    <div class="lever-container">
-      <div class="lever-shaft"></div>
-      <div class="lever-ball" id="leverBall"></div>
-    </div>
+    // ----------------------------------------
+    //  レバー押下演出 & スロット起動
+    // ----------------------------------------
+    const leverBall = document.getElementById('leverBall');
+    const notification = document.getElementById('notification');
 
-    <!-- リール&STOPを3セット横並び -->
-    <div class="reels-stop-area">
-      <!-- 1番リール -->
-      <div class="reel-stop">
-        <div class="reel" id="reel1">
-          <div class="numbers" id="numbers1"></div>
-        </div>
-        <button class="stop-btn" id="stop1" disabled>STOP</button>
-      </div>
-      <!-- 2番リール -->
-      <div class="reel-stop">
-        <div class="reel" id="reel2">
-          <div class="numbers" id="numbers2"></div>
-        </div>
-        <button class="stop-btn" id="stop2" disabled>STOP</button>
-      </div>
-      <!-- 3番リール -->
-      <div class="reel-stop">
-        <div class="reel" id="reel3">
-          <div class="numbers" id="numbers3"></div>
-        </div>
-        <button class="stop-btn" id="stop3" disabled>STOP</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- モーダル関連のHTMLは削除しました -->
-
-<script>
-  /* -------------------------------------------
-      1)  指を置いた瞬間にレバーが下がり、同時にスロットを回す
-      2)  指を離す(またはマウスを離す)まで押し込み状態を維持
-      3)  STOP すると、リールの真ん中(約40px)に数字が止まり
-         該当数字を太字に
-      4)  当たり(0,3,6)なら通知エリアにメッセージを表示
-          当たり(7,7,7)なら通知エリアにメッセージを表示
-  ------------------------------------------- */
-
-  // ----------------------------------------
-  //  レバー押下演出 & スロット起動
-  // ----------------------------------------
-  const leverBall = document.getElementById('leverBall');
-  const notification = document.getElementById('notification');
-
-  // PCマウス用: mousedown で回転開始
-  leverBall.addEventListener('mousedown', e => {
-    e.preventDefault();
-    handleLeverPress();
-  });
-  // 指を離したら押し込み解除
-  leverBall.addEventListener('mouseup', e => {
-    leverBall.classList.remove('pressed');
-  });
-  leverBall.addEventListener('mouseleave', e => {
-    leverBall.classList.remove('pressed');
-  });
-
-  // スマホタッチ用: touchstart で回転開始
-  leverBall.addEventListener('touchstart', e => {
-    e.preventDefault();
-    handleLeverPress();
-  }, {passive:false});
-  // 離したら押し込み解除
-  leverBall.addEventListener('touchend', () => {
-    leverBall.classList.remove('pressed');
-  });
-  leverBall.addEventListener('touchcancel', () => {
-    leverBall.classList.remove('pressed');
-  });
-
-  // レバー押し込み時の処理をまとめた関数
-  function handleLeverPress() {
-    // レバーを下げる演出
-    leverBall.classList.add('pressed');
-
-    // スロットを回し始める
-    startSlotIfNotSpinning();
-  }
-
-  // ----------------------------------------
-  //   スロットの本体ロジック
-  // ----------------------------------------
-  const spinCountText = document.getElementById('spinCountText');
-  const jackpotCountText = document.getElementById('jackpotCountText');
-  const displayMessage = document.getElementById('displayMessage');
-  const winImage = document.getElementById('winImage');
-
-  const stopBtn1 = document.getElementById('stop1');
-  const stopBtn2 = document.getElementById('stop2');
-  const stopBtn3 = document.getElementById('stop3');
-
-  const numbers1 = document.getElementById('numbers1');
-  const numbers2 = document.getElementById('numbers2');
-  const numbers3 = document.getElementById('numbers3');
-
-  /* --- 回転数とジャックポット回数を localStorage で管理 --- */
-  let spinCount = parseInt(localStorage.getItem('slotSpinCount') || '0', 10);
-  let jackpotCount = parseInt(localStorage.getItem('slotJackpotCount') || '0', 10);
-
-  function updateSpinCountDisplay() {
-    spinCountText.textContent = `回転数：${spinCount}`;
-    jackpotCountText.textContent = `当選回数：${jackpotCount}`;
-  }
-  updateSpinCountDisplay();
-
-  /* --- 0～7 を何回か繰り返したリストを各リールに表示（DOM生成）--- */
-  function fillNumbersDOM(container) {
-    // 0～7 を4回繰り返して計32行など
-    const repeatTimes = 4;
-    const digits = [];
-    for(let r=0; r<repeatTimes; r++){
-      for(let n=0; n<8; n++){
-        digits.push(n);
-      }
-    }
-    container.innerHTML = '';
-    digits.forEach(num => {
-      const div = document.createElement('div');
-      div.textContent = num;
-      container.appendChild(div);
+    // PCマウス用: mousedown で回転開始
+    leverBall.addEventListener('mousedown', e => {
+      e.preventDefault();
+      handleLeverPress();
     });
-  }
-  fillNumbersDOM(numbers1);
-  fillNumbersDOM(numbers2);
-  fillNumbersDOM(numbers3);
+    // 指を離したら押し込み解除
+    leverBall.addEventListener('mouseup', e => {
+      leverBall.classList.remove('pressed');
+    });
+    leverBall.addEventListener('mouseleave', e => {
+      leverBall.classList.remove('pressed');
+    });
 
-  let isSpinning = [false, false, false];
-  let reelPos = [0, 0, 0];
-  let reelTimer = [null, null, null];
-  const reelHeight = 30 * 8 * 4;  // 32行 * 30px = 960px
-  const scrollSpeed = 60;         // px/interval
+    // スマホタッチ用: touchstart で回転開始
+    leverBall.addEventListener('touchstart', e => {
+      e.preventDefault();
+      handleLeverPress();
+    }, {passive:false});
+    // 離したら押し込み解除
+    leverBall.addEventListener('touchend', () => {
+      leverBall.classList.remove('pressed');
+    });
+    leverBall.addEventListener('touchcancel', () => {
+      leverBall.classList.remove('pressed');
+    });
 
-  // 抽選結果
-  let finalResults = [0, 0, 0];
+    // レバー押し込み時の処理をまとめた関数
+    function handleLeverPress() {
+      // レバーを下げる演出
+      leverBall.classList.add('pressed');
 
-  // モーダル関連の要素は削除しました
-
-  // 通知を表示する関数
-  function showNotification(message, isCritical=false, redirectURL=null) {
-    notification.innerHTML = ''; // 既存の内容をクリア
-    notification.textContent = message;
-
-    if(isCritical && redirectURL){
-      // リンクを追加
-      const link = document.createElement('a');
-      link.href = redirectURL;
-      link.textContent = 'ここをクリック';
-      link.style.color = '#007bff';
-      link.style.textDecoration = 'underline';
-      link.style.marginLeft = '10px';
-      link.target = '_blank'; // 新しいタブで開く
-
-      notification.appendChild(link);
+      // スロットを回し始める
+      startSlotIfNotSpinning();
     }
 
-    notification.style.display = 'block';
-    // 3秒後に自動で非表示
-    setTimeout(() => {
-      notification.style.display = 'none';
-    }, 3000);
-  }
+    // ----------------------------------------
+    //   スロットの本体ロジック
+    // ----------------------------------------
+    const spinCountText = document.getElementById('spinCountText');
+    const jackpotCountText = document.getElementById('jackpotCountText');
+    const displayMessage = document.getElementById('displayMessage');
+    const winImage = document.getElementById('winImage');
 
-  // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
-  function startSlotIfNotSpinning() {
-    // まだ回転中なら何もしない
-    if(isSpinning.some(sp => sp)) return;
+    const stopBtn1 = document.getElementById('stop1');
+    const stopBtn2 = document.getElementById('stop2');
+    const stopBtn3 = document.getElementById('stop3');
 
-    // 回転数アップ
-    spinCount++;
-    localStorage.setItem('slotSpinCount', spinCount);
+    const numbers1 = document.getElementById('numbers1');
+    const numbers2 = document.getElementById('numbers2');
+    const numbers3 = document.getElementById('numbers3');
+
+    /* --- 回転数とジャックポット回数を localStorage で管理 --- */
+    let spinCount = parseInt(localStorage.getItem('slotSpinCount') || '0', 10);
+    let jackpotCount = parseInt(localStorage.getItem('slotJackpotCount') || '0', 10);
+
+    function updateSpinCountDisplay() {
+      spinCountText.textContent = `回転数：${spinCount}`;
+      jackpotCountText.textContent = `当選回数：${jackpotCount}`;
+    }
     updateSpinCountDisplay();
 
-    // メッセージ等リセット
-    displayMessage.textContent = "";
-    winImage.style.display = "none";
-
-    // 抽選
-    // [0,3,6]が36%、[7,7,7]が1%、その他が63%
-    const rand = Math.random();
-    if(rand < 0.36){
-      finalResults = [0, 3, 6];
-    } else if(rand < 0.37){
-      finalResults = [7, 7, 7];
-    } else {
-      finalResults = [
-        Math.floor(Math.random() * 8),
-        Math.floor(Math.random() * 8),
-        Math.floor(Math.random() * 8),
-      ];
-    }
-
-    // 3本のリールを回転開始
-    for(let i=0; i<3; i++){
-      startReel(i);
-    }
-
-    // STOPボタン有効
-    stopBtn1.disabled = false;
-    stopBtn2.disabled = false;
-    stopBtn3.disabled = false;
-  }
-
-  // リール回転
-  function startReel(idx) {
-    isSpinning[idx] = true;
-    reelPos[idx] = 0;
-    const container = [numbers1, numbers2, numbers3][idx];
-    // 既存のsetIntervalがあればクリア
-    if(reelTimer[idx]) clearInterval(reelTimer[idx]);
-
-    reelTimer[idx] = setInterval(() => {
-      reelPos[idx] += scrollSpeed;
-      // モジュロでループ
-      if(reelPos[idx] > reelHeight){
-        reelPos[idx] %= reelHeight;
-      }
-      container.style.transform = `translateY(-${reelPos[idx]}px)`;
-    }, 20);
-  }
-
-  // STOPボタン
-  stopBtn1.addEventListener('click', () => stopReel(0, stopBtn1));
-  stopBtn2.addEventListener('click', () => stopReel(1, stopBtn2));
-  stopBtn3.addEventListener('click', () => stopReel(2, stopBtn3));
-
-  function stopReel(idx, btn){
-    if(!isSpinning[idx]) return;
-    clearInterval(reelTimer[idx]);
-    isSpinning[idx] = false;
-    btn.disabled = true;
-
-    // 最終結果をリール中央にあわせる
-    const finalVal = finalResults[idx];
-    const container = [numbers1, numbers2, numbers3][idx];
-    const allDivs = container.querySelectorAll('div');
-    allDivs.forEach(div => div.classList.remove('boldNumber'));
-
-    let closestDist = Infinity;
-    let bestOffset = 0;
-    let bestIndex = 0;
-
-    for(let i=0; i<allDivs.length; i++){
-      const num = parseInt(allDivs[i].textContent,10);
-      if(num === finalVal){
-        const desiredOffset = i*30 - 25; // (真ん中40px付近に行を合わせる)
-        const dist = Math.abs(desiredOffset - reelPos[idx]);
-        if(dist < closestDist){
-          closestDist = dist;
-          bestOffset = desiredOffset;
-          bestIndex = i;
+    /* --- 0～7 を何回か繰り返したリストを各リールに表示（DOM生成）--- */
+    function fillNumbersDOM(container) {
+      // 0～7 を4回繰り返して計32行など
+      const repeatTimes = 4;
+      const digits = [];
+      for(let r=0; r<repeatTimes; r++){
+        for(let n=0; n<8; n++){
+          digits.push(n);
         }
       }
+      container.innerHTML = '';
+      digits.forEach(num => {
+        const div = document.createElement('div');
+        div.textContent = num;
+        container.appendChild(div);
+      });
     }
-    function modInRange(x, range){
-      return ((x%range)+range)%range;
+    fillNumbersDOM(numbers1);
+    fillNumbersDOM(numbers2);
+    fillNumbersDOM(numbers3);
+
+    let isSpinning = [false, false, false];
+    let reelPos = [0, 0, 0];
+    let reelTimer = [null, null, null];
+    const reelHeight = 30 * 8 * 4;  // 32行 * 30px = 960px
+    const scrollSpeed = 60;         // px/interval
+
+    // 抽選結果
+    let finalResults = [0, 0, 0];
+
+    // 通知を表示する関数
+    function showNotification(message, isCritical=false, redirectURL=null) {
+      notification.innerHTML = ''; // 既存の内容をクリア
+      const messageSpan = document.createElement('span');
+      messageSpan.textContent = message;
+      notification.appendChild(messageSpan);
+
+      if(isCritical && redirectURL){
+        // リンクを追加
+        const link = document.createElement('a');
+        link.href = redirectURL;
+        link.textContent = 'ここをクリック';
+        link.style.color = '#007bff';
+        link.style.textDecoration = 'underline';
+        link.style.marginLeft = '10px';
+        link.target = '_blank'; // 新しいタブで開く
+
+        notification.appendChild(link);
+      }
+
+      notification.style.display = 'block';
+      // 5秒後に自動で非表示（必要に応じて調整）
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
     }
-    reelPos[idx] = modInRange(bestOffset, reelHeight);
-    container.style.transform = `translateY(-${reelPos[idx]}px)`;
-    allDivs[bestIndex].classList.add('boldNumber');
 
-    // 全停止したら結果判定
-    if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
-      checkResult();
-    }
-  }
+    // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
+    function startSlotIfNotSpinning() {
+      // まだ回転中なら何もしない
+      if(isSpinning.some(sp => sp)) return;
 
-  function checkResult(){
-    const [r1, r2, r3] = finalResults;
-    if(r1===0 && r2===3 && r3===6){
-      // [0,3,6]ジャックポット
-      displayMessage.textContent = "036が出ました！";
-      winImage.style.display = "block";
-      // ジャックポット回数アップ
-      jackpotCount++;
-      localStorage.setItem('slotJackpotCount', jackpotCount);
-      updateSpinCountDisplay();
-
-      // 通知エリアにメッセージを表示
-      showNotification("036が出ました！おめでとうございます！", false);
-    } else if(r1===7 && r2===7 && r3===7){
-      // [7,7,7]ジャックポット
-      displayMessage.textContent = "777が出ました！";
-      winImage.style.display = "block";
-      // 回転数リセット
-      spinCount=0;
+      // 回転数アップ
+      spinCount++;
       localStorage.setItem('slotSpinCount', spinCount);
       updateSpinCountDisplay();
 
-      // 通知エリアにメッセージとリンクを表示
-      showNotification("777が出ました！主催者に報告しましょう。", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
-    } else {
-      displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
-    }
-  }
+      // メッセージ等リセット
+      displayMessage.textContent = "";
+      winImage.style.display = "none";
 
-</script>
+      // 抽選
+      // [0,3,6]が36%、[7,7,7]が1%、その他が63%
+      const rand = Math.random();
+      if(rand < 0.36){
+        finalResults = [0, 3, 6];
+      } else if(rand < 0.37){
+        finalResults = [7, 7, 7];
+      } else {
+        finalResults = [
+          Math.floor(Math.random() * 8),
+          Math.floor(Math.random() * 8),
+          Math.floor(Math.random() * 8),
+        ];
+      }
+
+      // 3本のリールを回転開始
+      for(let i=0; i<3; i++){
+        startReel(i);
+      }
+
+      // STOPボタン有効
+      stopBtn1.disabled = false;
+      stopBtn2.disabled = false;
+      stopBtn3.disabled = false;
+    }
+
+    // リール回転
+    function startReel(idx) {
+      isSpinning[idx] = true;
+      reelPos[idx] = 0;
+      const container = [numbers1, numbers2, numbers3][idx];
+      // 既存のsetIntervalがあればクリア
+      if(reelTimer[idx]) clearInterval(reelTimer[idx]);
+
+      reelTimer[idx] = setInterval(() => {
+        reelPos[idx] += scrollSpeed;
+        // モジュロでループ
+        if(reelPos[idx] > reelHeight){
+          reelPos[idx] %= reelHeight;
+        }
+        container.style.transform = `translateY(-${reelPos[idx]}px)`;
+      }, 20);
+    }
+
+    // STOPボタン
+    stopBtn1.addEventListener('click', () => stopReel(0, stopBtn1));
+    stopBtn2.addEventListener('click', () => stopReel(1, stopBtn2));
+    stopBtn3.addEventListener('click', () => stopReel(2, stopBtn3));
+
+    function stopReel(idx, btn){
+      if(!isSpinning[idx]) return;
+      clearInterval(reelTimer[idx]);
+      isSpinning[idx] = false;
+      btn.disabled = true;
+
+      // 最終結果をリール中央にあわせる
+      const finalVal = finalResults[idx];
+      const container = [numbers1, numbers2, numbers3][idx];
+      const allDivs = container.querySelectorAll('div');
+      allDivs.forEach(div => div.classList.remove('boldNumber'));
+
+      let closestDist = Infinity;
+      let bestOffset = 0;
+      let bestIndex = 0;
+
+      for(let i=0; i<allDivs.length; i++){
+        const num = parseInt(allDivs[i].textContent,10);
+        if(num === finalVal){
+          const desiredOffset = i*30 - 25; // (真ん中40px付近に行を合わせる)
+          const dist = Math.abs(desiredOffset - reelPos[idx]);
+          if(dist < closestDist){
+            closestDist = dist;
+            bestOffset = desiredOffset;
+            bestIndex = i;
+          }
+        }
+      }
+      function modInRange(x, range){
+        return ((x%range)+range)%range;
+      }
+      reelPos[idx] = modInRange(bestOffset, reelHeight);
+      container.style.transform = `translateY(-${reelPos[idx]}px)`;
+      allDivs[bestIndex].classList.add('boldNumber');
+
+      // 全停止したら結果判定
+      if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
+        checkResult();
+      }
+    }
+
+    function checkResult(){
+      const [r1, r2, r3] = finalResults;
+      if(r1===0 && r2===3 && r3===6){
+        // [0,3,6]ジャックポット
+        displayMessage.textContent = "036が出ました！";
+        winImage.style.display = "block";
+        // ジャックポット回数アップ
+        jackpotCount++;
+        localStorage.setItem('slotJackpotCount', jackpotCount);
+        updateSpinCountDisplay();
+
+        // 通知エリアにメッセージを表示
+        showNotification("036が出ました！おめでとうございます！", false);
+      } else if(r1===7 && r2===7 && r3===7){
+        // [7,7,7]ジャックポット
+        displayMessage.textContent = "777が出ました！";
+        winImage.style.display = "block";
+        // 回転数リセット
+        spinCount=0;
+        localStorage.setItem('slotSpinCount', spinCount);
+        updateSpinCountDisplay();
+
+        // 通知エリアにメッセージとリンクを表示
+        showNotification("777が出ました！主催者に報告しましょう。", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
+      } else {
+        displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
+      }
+    }
+
+  </script>
 </body>
 </html>
