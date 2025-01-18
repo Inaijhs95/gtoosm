@@ -84,16 +84,6 @@
       margin-top: 5px;
     }
 
-    /* 大当たり画像（削除） */
-    /* .win-image {
-      position: absolute;
-      top: 135px;   /* 画面上からの距離（調整可） */
-      /* right: 10px;  /* 右端からの距離（調整可） */
-      /* width: 70px;
-      display: none;
-      z-index: 10;  /* リールより前面に */
-    /* } */
-
     /* --- 本体下部：レバー＆リール+ボタンたちを横一列に --- */
     .machine-body {
       display: flex;
@@ -219,7 +209,7 @@
     /* silhouette.pngとGOGO.pngのスタイル */
     .silhouette-image, .gogo-image {
       position: absolute;
-      top: 0;
+      top: 10px; /* 少し下に調整 */
       right: -80px; /* ストップボタンの右側に配置 */
       width: 70px;
       height: auto;
@@ -351,7 +341,7 @@
     const spinCountText = document.getElementById('spinCountText');
     const jackpotCountText = document.getElementById('jackpotCountText');
     const displayMessage = document.getElementById('displayMessage');
-    const winImage = document.getElementById('winImage');
+    // const winImage = document.getElementById('winImage'); // winImageに関するコードを削除
 
     const stopBtn1 = document.getElementById('stop1');
     const stopBtn2 = document.getElementById('stop2');
@@ -443,7 +433,7 @@
 
       // メッセージ等リセット
       displayMessage.textContent = "";
-      winImage.style.display = "none";
+      // winImage.style.display = "none"; // winImageに関するコードを削除
 
       // 抽選
       // [0,3,6]が36%または0.36%、[7,7,7]が1%、その他が残り
