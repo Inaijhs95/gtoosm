@@ -176,7 +176,7 @@
       left: 0;
       width: 100%;
       background: #fff; /* 全体を白背景に */
-      transition: transform 0.5s ease;
+      /* transition: transform 0.5s ease; */ /* トランジションを削除 */
     }
     .numbers div {
       height: 30px;
@@ -474,41 +474,38 @@
       isSpinning[idx] = false;
       btn.disabled = true;
 
-      // 最終結果をリール中央にあわせる
+      // 最終結果をリール中央に合わせる
       const finalVal = finalResults[idx];
       const container = [numbers1, numbers2, numbers3][idx];
       const allDivs = container.querySelectorAll('div');
       allDivs.forEach(div => div.classList.remove('boldNumber'));
 
-      let closestDist = Infinity;
-      let bestOffset = 0;
       let bestIndex = 0;
 
+      // 最も近い位置の数字を選択
+      let minDistance = Infinity;
       for(let i=0; i<allDivs.length; i++){
         const num = parseInt(allDivs[i].textContent,10);
         if(num === finalVal){
-          const desiredOffset = i*30 - 25; // (真ん中40px付近に行を合わせる)
-          const dist = Math.abs(desiredOffset - reelPos[idx]);
-          if(dist < closestDist){
-            closestDist = dist;
-            bestOffset = desiredOffset;
+          const desiredOffset = i * 30 - 25; // (真ん中40px付近に行を合わせる)
+          const distance = Math.abs(desiredOffset - reelPos[idx]);
+          if(distance < minDistance){
+            minDistance = distance;
             bestIndex = i;
           }
         }
       }
-      function modInRange(x, range){
-        return ((x%range)+range)%range;
-      }
-      reelPos[idx] = modInRange(bestOffset, reelHeight);
+
+      // リール位置を設定
+      const finalOffset = bestIndex * 30 - 25;
+      reelPos[idx] = finalOffset;
       container.style.transform = `translateY(-${reelPos[idx]}px)`;
+
       allDivs[bestIndex].classList.add('boldNumber');
 
-      // 全停止したら結果判定を遅延実行
+      // 全停止したら結果判定を即実行
       if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
-        // CSSのtransition時間（0.5s）に合わせて500ms遅延
-        setTimeout(() => {
-          checkResult();
-        }, 500);
+        checkResult();
       }
     }
 
@@ -524,7 +521,7 @@
         updateSpinCountDisplay();
 
         // 通知エリアにメッセージとリンクを表示
-        showNotification("036が出ました！おめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F");
+        showNotification("036が出ました！おめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/036%E5%88%86%E3%81%AE1%E3%81%AE%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F");
       } else if(r1===7 && r2===7 && r3===7){
         // [7,7,7]ジャックポット
         displayMessage.textContent = "777が出ました！";
@@ -535,7 +532,7 @@
         updateSpinCountDisplay();
 
         // 通知エリアにメッセージとリンクを表示
-        showNotification("777が出ました！主催者に報告しましょう。", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%96%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F");
+        showNotification("777が出ました！主催者に報告しましょう。", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
       } else {
         displayMessage.textContent = "なんぼでも挑戦可能！狙うはあの数字？";
       }
