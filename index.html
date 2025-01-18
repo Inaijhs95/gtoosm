@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>0.36の奇跡</title>
+  <title>36分の1の奇跡</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* ベースリセット */
@@ -236,7 +236,7 @@
         <div id="spinCountText">回転数：0</div>
         <div id="jackpotCountText">当選回数：0</div>
       </div>
-      <div id="displayMessage">なんぼでも挑戦可能！狙うはあの数字？</div>
+      <div id="displayMessage">36分の１の確率で何かが起こる!!</div>
     </div>
 
     <!-- 大当たり画像（削除） -->
@@ -439,9 +439,9 @@
       // [0,3,6]が36%または0.36%、[7,7,7]が1%、その他が残り
       let rand = Math.random();
       if(isGogoActive){
-        if(rand < 0.36){
+        if(rand < 0.027){
           finalResults = [0, 3, 6];
-        } else if(rand < 0.37){
+        } else if(rand < 0.037){
           finalResults = [7, 7, 7];
         } else {
           finalResults = [
