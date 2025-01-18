@@ -439,9 +439,9 @@
       // [0,3,6]が36%または0.36%、[7,7,7]が1%、その他が残り
       let rand = Math.random();
       if(isGogoActive){
-        if(rand < 0.027){
+        if(rand < 0.36){
           finalResults = [0, 3, 6];
-        } else if(rand < 0.037){
+        } else if(rand < 0.37){
           finalResults = [7, 7, 7];
         } else {
           finalResults = [
@@ -579,10 +579,10 @@
     // GOGO.pngの表示抽選
     function performGogoDraw(){
       const rand = Math.random();
-      if(rand < 0.36){
+      if(rand < 0.027){
         showGogo();
       }
-      // 36%の確率で表示されるので、64%は何もしない
+      // 2.7%の確率で表示されるので、97.3％は何もしない
     }
 
     function showGogo(){
