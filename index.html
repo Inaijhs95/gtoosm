@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -274,8 +274,8 @@
     .back-button-container img {
       width: 100%;
       height: auto;
-      max-height: 50px; /* 適宜調整 */
-      object-fit: cover;
+      /* max-height: 50px; */ /* 見切れを防ぐため削除 */
+      object-fit: contain; /* 画像がコンテナに収まるように変更 */
       border-radius: 6px;
     }
 
@@ -292,6 +292,7 @@
       background-color: rgba(0,0,0,0.5); /* 背景の半透明 */
       justify-content: center;
       align-items: center;
+      display: flex; /* フレックスボックスを使用 */
     }
     .modal-content {
       background-color: #fff;
@@ -320,6 +321,18 @@
     }
     .modal-content .close-modal-btn:hover {
       color: #555;
+    }
+
+    /* --- レスポンシブデザイン --- */
+    @media (max-width: 500px) {
+      .slot-machine {
+        width: 90%;
+        max-width: 420px;
+      }
+      .modal-content {
+        width: 90%;
+        max-width: 400px;
+      }
     }
   </style>
 </head>
