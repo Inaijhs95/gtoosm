@@ -171,7 +171,7 @@
     /* リール枠 */
     .reel {
       width: 60px;
-      height: 120px; /* 画像高さ25px × 3枚 = 75px */
+      height: 120px; /* 画像高さ40px × 3枚 = 120px */
       overflow: hidden;
       border-radius: 8px;
       background: #000;
@@ -189,7 +189,7 @@
       /* transition: transform 0.5s ease; */ /* トランジションを削除 */
     }
     .numbers div {
-      height: 40px; /* 画像高さを25pxに変更 */
+      height: 40px; /* 画像高さを40pxに変更 */
       line-height: 40px; /* 画像高さに合わせて変更 */
       text-align: center;
       background: transparent; /* 個々は透明(上で白背景にしている) */
@@ -255,8 +255,8 @@
     /* リール内の画像に対するスタイル */
     .numbers img {
       width: 100%; /* リール枠に合わせて画像の幅を調整 */
-      height: 40px; /* 画像高さを25pxに固定 */
-      object-fit: cover; /* 画像が枠に収まるように調整 */
+      height: 40px; /* 画像高さを40pxに固定 */
+      object-fit: contain; /* 画像が枠に収まるように調整 */
     }
   </style>
 </head>
@@ -328,7 +328,7 @@
     /* -------------------------------------------
         1)  指を置いた瞬間にレバーが下がり、同時にスロットを回す
         2)  指を離す(またはマウスを離す)まで押し込み状態を維持
-        3)  STOP すると、リールの真ん中(約40px)に画像が止まり
+        3)  STOP すると、リールの真ん中(約60px)に画像が止まり
            該当画像をハイライトに
         4)  当たり(0.png,3.png,6.png)なら通知エリアにメッセージとリンクを表示
             当たり(7.png,7.png,7.png)なら通知エリアにメッセージとリンクを表示
@@ -373,7 +373,7 @@
       let isSpinningFlag = [false, false, false];
       let reelPos = [0, 0, 0];
       let reelTimer = [null, null, null];
-      const reelHeight = 40 * 7 * 4;  // 7画像 * 4回繰り返し * 25px = 700px
+      const reelHeight = 40 * 7 * 4;  // 7画像 * 4回繰り返し * 40px = 1120px
       const scrollSpeed = 60;         // px/interval
 
       // 抽選結果
@@ -444,8 +444,8 @@
           img.src = `images/${imgSrc}`; // 画像のパスを指定
           img.alt = imgSrc.replace('.png', '');
           img.style.width = '100%'; // リール枠に合わせて画像の幅を調整
-          img.style.height = '25px'; // 画像の高さを25pxに固定
-          img.style.objectFit = 'cover'; // 画像が枠に収まるように調整
+          img.style.height = '40px'; // 画像の高さを40pxに固定
+          img.style.objectFit = 'contain'; // 画像が枠に収まるように調整
           div.appendChild(img);
           container.appendChild(div);
         });
@@ -618,7 +618,7 @@
           if (!img) continue; // imgが存在しない場合を防ぐ
           const src = img.getAttribute('src').split('/').pop(); // 'images/bell.png' -> 'bell.png'
           if(src === finalVal){
-            const desiredOffset = i * 40 - 40; // (真ん中25px × 3 / 2 = 37.5px、調整値-20px)
+            const desiredOffset = i * 40 - 40; // 画像高さ40pxに合わせて調整
             const distance = Math.abs(desiredOffset - reelPos[idx]);
             if(distance < minDistance){
               minDistance = distance;
@@ -628,7 +628,7 @@
         }
 
         // リール位置を設定
-        const finalOffset = bestIndex * 25 - 20; // 画像高さ25pxに合わせて調整
+        const finalOffset = bestIndex * 40 - 40; // 画像高さ40pxに合わせて調整
         reelPos[idx] = finalOffset;
         container.style.transform = `translateY(-${reelPos[idx]}px)`;
 
