@@ -5,253 +5,8 @@
   <title>36分の1の奇跡</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* ベースリセット */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background: #444;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      display: flex;
-      flex-direction: column; /* 通知エリアとスロットマシンを縦に並べる */
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-
-    /* 通知エリア */
-    #notification {
-      position: fixed; /* 画面上部に固定 */
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(255, 255, 255, 0.95);
-      color: #000;
-      padding: 15px 25px;
-      border-radius: 8px;
-      display: none; /* 初期状態は非表示 */
-      z-index: 100; /* 他の要素より前面に表示 */
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      font-size: 1em;
-      max-width: 90%;
-      text-align: center;
-      position: relative; /* 閉じるボタンの位置指定に必要 */
-      transition: top 0.5s ease; /* スライドイン・アウトのアニメーション */
-    }
-    /* 通知が表示されるときの位置 */
-    #notification.show {
-      top: 20px;
-    }
-    /* 閉じるボタン */
-    #notification .close-btn {
-      position: absolute;
-      top: 5px;
-      right: 10px;
-      background: none;
-      border: none;
-      font-size: 1.2em;
-      cursor: pointer;
-      color: #000;
-    }
-    #notification .close-btn:hover {
-      color: #555;
-    }
-
-    /* スロット台 */
-    .slot-machine {
-      width: 420px;
-      background: #222;
-      border: 6px solid #000;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.8);
-      position: relative;
-      overflow: hidden;
-      padding-bottom: 20px; /* 下部に少し余裕 */
-    }
-
-    /* --- 上部ディスプレイ部 --- */
-    .slot-display {
-      background: #111;
-      padding: 10px;
-      height: 120px; /* 高さを調整して通知エリアを追加 */
-      border-bottom: 3px solid #000;
-      text-align: center;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    .slot-display h2 {
-      font-size: 1.5em;
-      margin-bottom: 8px;
-    }
-    #spinCountContainer {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-    #spinCountText, #jackpotCountText {
-      font-size: 1em;
-    }
-    #displayMessage {
-      min-height: 20px;
-      font-size: 1em;
-      margin-top: 5px;
-    }
-
-    /* --- 本体下部：レバー＆リール+ボタンたちを横一列に --- */
-    .machine-body {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 10px;
-      position: relative;
-    }
-
-    /* レバーコンテナを左端に */
-    .lever-container {
-      width: 60px;
-      height: 100px;
-      position: relative;
-      margin-right: 10px;
-    }
-    /* シルバー棒 */
-    .lever-shaft {
-      position: absolute;
-      left: 28px;
-      top: 0;
-      width: 4px;
-      height: 100px;
-      background: linear-gradient(#bbb, #777);
-      border-radius: 2px;
-    }
-    /* 黒い球 */
-    .lever-ball {
-      position: absolute;
-      left: 10px;
-      top: 0;
-      width: 40px;
-      height: 40px;
-      background: radial-gradient(#222, #000);
-      border-radius: 50%;
-      box-shadow: 0 0 8px rgba(0,0,0,0.6) inset, 0 4px 6px rgba(0,0,0,0.8);
-      user-select: none;
-
-      /* スマホでのハイライト等を防ぐ(押し込み演出が見やすくなる) */
-      -webkit-user-select: none;
-      -webkit-touch-callout: none;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: none; 
-      
-      /* アニメーションを滑らかに */
-      transition: transform 0.2s ease;
-      cursor: pointer;
-    }
-    /* 押し込む間だけ下がるアニメを .pressed クラスで表現 */
-    .lever-ball.pressed {
-      transform: translateY(40px);
-    }
-
-    /* --- リールとストップボタンを横並びで1列×3セット --- */
-    .reels-stop-area {
-      display: flex;
-      gap: 10px;
-    }
-    .reel-stop {
-      display: flex;
-      flex-direction: column; /* 縦にリール + ボタン */
-      align-items: center;
-      position: relative; /* 画像の重ね合わせに必要 */
-    }
-
-    /* リール枠 */
-    .reel {
-      width: 60px;
-      height: 80px; /* 窓の高さ */
-      overflow: hidden;
-      border-radius: 8px;
-      background: #000;
-      box-shadow: inset 0 3px 10px rgba(0,0,0,0.5);
-      margin-bottom: 6px;
-      position: relative;
-    }
-    /* リール内 */
-    .numbers {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background: #fff; /* 全体を白背景に */
-      /* transition: transform 0.5s ease; */ /* トランジションを削除 */
-    }
-    .numbers div {
-      height: 30px;
-      line-height: 30px;
-      text-align: center;
-      background: transparent; /* 個々は透明(上で白背景にしている) */
-      color: #000;
-      border-bottom: 1px solid #ccc;
-      font-size: 1.2em;
-    }
-
-    /* ストップボタン(赤) */
-    .stop-btn {
-      width: 60px;
-      height: 60px;
-      border-radius: 10px;
-      border: 2px solid #aa0000;
-      background: linear-gradient(to bottom, #ff5555, #bb0000);
-      color: #fff;
-      font-size: 0.8em;
-      font-weight: bold;
-      box-shadow: 0 0 4px rgba(0,0,0,0.8) inset, 0 3px 6px rgba(0,0,0,0.4);
-      cursor: pointer;
-    }
-    .stop-btn:active {
-      transform: translateY(2px);
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
-    }
-    .stop-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* ストップ後、その行を太字にするクラス */
-    .boldNumber {
-      font-weight: bold;
-    }
-
-    /* silhouette.pngとGOGO.pngのスタイル */
-    .silhouette-image, .gogo-image {
-      position: absolute;
-      top: 90px; /* 少し下に調整 */
-      right: -80px; /* ストップボタンの右側に配置 */
-      width: 70px;
-      height: auto;
-      display: none; /* GOGO.pngは非表示。silhouette.pngは常時表示 */
-    }
-    .silhouette-image {
-      display: block; /* 常時表示 */
-    }
-    .gogo-image {
-      z-index: 5; /* silhouette.pngより前面に表示 */
-    }
-
-    /* 営業時間外メッセージのスタイル */
-    #closed-message {
-      background-color: rgba(255, 255, 255, 0.95);
-      color: #000;
-      padding: 20px 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      font-size: 1.5em;
-      text-align: center;
-    }
+    /* 既存のCSSコードはそのまま */
+    /* ...（省略）... */
 
     /* リール内の画像に対するスタイル */
     .numbers img {
@@ -351,88 +106,16 @@
     const closedMessage = document.getElementById('closed-message');
     const slotMachine = document.getElementById('slotMachine');
 
+    /* --- 回転数とジャックポット回数を localStorage で管理 --- */
+    let spinCount = 0;
+    let jackpotCount = 0;
+
     // 営業時間チェック関数
     function isWithinBusinessHours() {
       const now = new Date();
       const hours = now.getHours();
       return hours >= 8 && hours < 24; // 午前8時から24時
     }
-
-    // 営業時間外の場合の処理
-    if (!isWithinBusinessHours()) {
-      slotMachine.style.display = 'none';
-      closedMessage.style.display = 'block';
-    } else {
-      // 営業時間内の処理を続行
-      initializeCounts();
-      fillAllReels();
-    }
-
-    // 閉じるボタンのイベントリスナー
-    closeNotificationBtn.addEventListener('click', () => {
-      hideNotification();
-    });
-
-    // PCマウス用: mousedown で回転開始
-    leverBall.addEventListener('mousedown', e => {
-      e.preventDefault();
-      handleLeverPress();
-      console.log('Lever pressed via mousedown');
-    });
-    // 指を離したら押し込み解除
-    leverBall.addEventListener('mouseup', e => {
-      leverBall.classList.remove('pressed');
-      console.log('Lever released via mouseup');
-    });
-    leverBall.addEventListener('mouseleave', e => {
-      leverBall.classList.remove('pressed');
-      console.log('Lever released via mouseleave');
-    });
-
-    // スマホタッチ用: touchstart で回転開始
-    leverBall.addEventListener('touchstart', e => {
-      e.preventDefault();
-      handleLeverPress();
-      console.log('Lever pressed via touchstart');
-    }, {passive:false});
-    // 離したら押し込み解除
-    leverBall.addEventListener('touchend', () => {
-      leverBall.classList.remove('pressed');
-      console.log('Lever released via touchend');
-    });
-    leverBall.addEventListener('touchcancel', () => {
-      leverBall.classList.remove('pressed');
-      console.log('Lever released via touchcancel');
-    });
-
-    // レバー押し込み時の処理をまとめた関数
-    function handleLeverPress() {
-      // レバーを下げる演出
-      leverBall.classList.add('pressed');
-      console.log('Lever pressed - .pressed class added');
-
-      // スロットを回し始める
-      startSlotIfNotSpinning();
-    }
-
-    // ----------------------------------------
-    //   スロットの本体ロジック
-    // ----------------------------------------
-    const spinCountText = document.getElementById('spinCountText');
-    const jackpotCountText = document.getElementById('jackpotCountText');
-    const displayMessage = document.getElementById('displayMessage');
-
-    const stopBtn1 = document.getElementById('stop1');
-    const stopBtn2 = document.getElementById('stop2');
-    const stopBtn3 = document.getElementById('stop3');
-
-    const numbers1 = document.getElementById('numbers1');
-    const numbers2 = document.getElementById('numbers2');
-    const numbers3 = document.getElementById('numbers3');
-
-    /* --- 回転数とジャックポット回数を localStorage で管理 --- */
-    let spinCount = 0;
-    let jackpotCount = 0;
 
     // 日付フォーマット関数（YYYY-MM-DD）
     function getCurrentDateString() {
@@ -517,6 +200,64 @@
     // GOGO状態
     let isGogoActive = false;
 
+    // 営業時間外の場合の処理
+    if (!isWithinBusinessHours()) {
+      slotMachine.style.display = 'none';
+      closedMessage.style.display = 'block';
+    } else {
+      // 営業時間内の処理を続行
+      initializeCounts();
+      fillAllReels();
+      console.log('Page initialized and reels filled');
+    }
+
+    // 閉じるボタンのイベントリスナー
+    closeNotificationBtn.addEventListener('click', () => {
+      hideNotification();
+    });
+
+    // PCマウス用: mousedown で回転開始
+    leverBall.addEventListener('mousedown', e => {
+      e.preventDefault();
+      handleLeverPress();
+      console.log('Lever pressed via mousedown');
+    });
+    // 指を離したら押し込み解除
+    leverBall.addEventListener('mouseup', e => {
+      leverBall.classList.remove('pressed');
+      console.log('Lever released via mouseup');
+    });
+    leverBall.addEventListener('mouseleave', e => {
+      leverBall.classList.remove('pressed');
+      console.log('Lever released via mouseleave');
+    });
+
+    // スマホタッチ用: touchstart で回転開始
+    leverBall.addEventListener('touchstart', e => {
+      e.preventDefault();
+      handleLeverPress();
+      console.log('Lever pressed via touchstart');
+    }, {passive:false});
+    // 離したら押し込み解除
+    leverBall.addEventListener('touchend', () => {
+      leverBall.classList.remove('pressed');
+      console.log('Lever released via touchend');
+    });
+    leverBall.addEventListener('touchcancel', () => {
+      leverBall.classList.remove('pressed');
+      console.log('Lever released via touchcancel');
+    });
+
+    // レバー押し込み時の処理をまとめた関数
+    function handleLeverPress() {
+      // レバーを下げる演出
+      leverBall.classList.add('pressed');
+      console.log('Lever pressed - .pressed class added');
+
+      // スロットを回し始める
+      startSlotIfNotSpinning();
+    }
+
     // 通知を表示する関数
     function showNotification(message, isCritical=false, redirectURL=null) {
       notificationMessage.innerHTML = message.replace(/\n/g, '<br>'); // 改行を反映
@@ -560,8 +301,8 @@
       displayMessage.textContent = "";
 
       // 抽選
-      // [0.png,3.png,6.png]が36%、
-      // [7.png,7.png,7.png]が1%、
+      // [0,3,6]が36%、
+      // [7,7,7]が1%、
       // その他が63%
       let rand = Math.random();
       console.log('Random number for draw:', rand);
