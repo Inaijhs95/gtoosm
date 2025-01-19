@@ -352,7 +352,7 @@
     function isWithinBusinessHours() {
       const now = new Date();
       const hours = now.getHours();
-      return hours >= 11 && hours < 24; // 午前8時から正午12時
+      return hours >= 8 && hours < 24; // 午前8時から24時
     }
 
     // 営業時間外の場合の処理
