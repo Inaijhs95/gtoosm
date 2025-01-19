@@ -357,7 +357,10 @@
       const hours = now.getHours();
       return hours >= 8 && hours < 24; // 午前8時から24時
     }
-
+   /* --- 回転数とジャックポット回数を localStorage で管理 --- */
+    let spinCount = 0;
+    let jackpotCount = 0;
+  
     // 営業時間外の場合の処理
     if (!isWithinBusinessHours()) {
       slotMachine.style.display = 'none';
@@ -430,10 +433,7 @@
     const numbers2 = document.getElementById('numbers2');
     const numbers3 = document.getElementById('numbers3');
 
-    /* --- 回転数とジャックポット回数を localStorage で管理 --- */
-    let spinCount = 0;
-    let jackpotCount = 0;
-
+ 
     // 日付フォーマット関数（YYYY-MM-DD）
     function getCurrentDateString() {
       const today = new Date();
