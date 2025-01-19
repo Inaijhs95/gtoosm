@@ -775,10 +775,7 @@
         } else if(r1 === '7.png' && r2 === '7.png' && r3 === '7.png'){
           // [7.png,7.png,7.png]ジャックポット
           displayMessage.textContent = "当たり";
-          // 回転数リセット
-          spinCount = 0;
-          localStorage.setItem('slotSpinCount', spinCount);
-          updateSpinCountDisplay();
+         
           console.log('Jackpot [7.png, 7.png, 7.png] achieved');
 
           // 通知エリアにメッセージとリンクを表示
