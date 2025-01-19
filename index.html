@@ -519,12 +519,12 @@
       // winImage.style.display = "none"; // winImageに関するコードを削除
 
       // 抽選
-      // [0,3,6]が36%または0.36%、[7,7,7]が0.1%、その他が残り
+      // [0,3,6]が36%または0.36%、[7,7,7]が0.1%、その他が残り0.361
       let rand = Math.random();
       if(isGogoActive){
         if(rand < 0.36){
           finalResults = [0, 3, 6];
-        } else if(rand < 0.361){
+        } else if(rand < 0.72){
           finalResults = [7, 7, 7];
         } else {
           finalResults = [
@@ -655,14 +655,14 @@
         // 通知エリアにメッセージとリンクを表示
         showNotification("777が出ました！\nおめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
       } else {
-        displayMessage.textContent = "スゴく低確率!!!!";
+        displayMessage.textContent = "36分の１の確率で何かが起こる!!";
       }
     }
 
     // GOGO.pngの表示抽選
     function performGogoDraw(){
       const rand = Math.random();
-      if(rand < 0.027){
+      if(rand < 0.27){
         showGogo();
       }
       // 2.7%の確率で0.027表示されるので、97.3％は何もしない
