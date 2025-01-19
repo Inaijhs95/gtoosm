@@ -265,8 +265,8 @@
 
   <!-- 営業時間外メッセージ（初期は非表示） -->
   <div id="closed-message" style="display: none;">
-    営業時間外<br>
-    営業時間:朝8時～深夜24時
+    営業時間外です。<br>
+    AM8時からPM12時にお越しください。
   </div>
 
   <div class="slot-machine" id="slotMachine">
@@ -279,9 +279,6 @@
       </div>
       <div id="displayMessage">36分の１の確率で何かが起こる!!</div>
     </div>
-
-    <!-- 大当たり画像（削除） -->
-    <!-- <img src="osm.png" alt="Win Image" class="win-image" id="winImage"> -->
 
     <!-- 本体下部：レバー + (リール+ストップ)×3 -->
     <div class="machine-body">
@@ -325,10 +322,10 @@
     /* -------------------------------------------
         1)  指を置いた瞬間にレバーが下がり、同時にスロットを回す
         2)  指を離す(またはマウスを離す)まで押し込み状態を維持
-        3)  STOP すると、リールの真ん中(約40px)に数字が止まり
-           該当数字を太字に
-        4)  当たり(0,3,6)なら通知エリアにメッセージとリンクを表示
-            当たり(7,7,7)なら通知エリアにメッセージとリンクを表示
+        3)  STOP すると、リールの真ん中(約40px)に画像が止まり
+           該当画像をハイライトに
+        4)  当たり(0.png,3.png,6.png)なら通知エリアにメッセージとリンクを表示
+            当たり(7.png,7.png,7.png)なら通知エリアにメッセージとリンクを表示
     ------------------------------------------- */
 
     // ----------------------------------------
@@ -361,12 +358,13 @@
       closedMessage.style.display = 'block';
     } else {
       // 営業時間内の処理を続行
-      // ここにスロットマシンの初期化コードを置く
+      initializeCounts();
+      fillAllReels();
     }
 
     // 閉じるボタンのイベントリスナー
     closeNotificationBtn.addEventListener('click', () => {
-      notification.style.display = 'none';
+      hideNotification();
     });
 
     // PCマウス用: mousedown で回転開始
@@ -410,7 +408,6 @@
     const spinCountText = document.getElementById('spinCountText');
     const jackpotCountText = document.getElementById('jackpotCountText');
     const displayMessage = document.getElementById('displayMessage');
-    // const winImage = document.getElementById('winImage'); // winImageに関するコードを削除
 
     const stopBtn1 = document.getElementById('stop1');
     const stopBtn2 = document.getElementById('stop2');
@@ -453,42 +450,53 @@
       updateSpinCountDisplay();
     }
 
-    initializeCounts();
-
     function updateSpinCountDisplay() {
       spinCountText.textContent = `回転数：${spinCount}`;
       jackpotCountText.textContent = `当選回数：${jackpotCount}`;
     }
 
-    /* --- 0～7 を何回か繰り返したリストを各リールに表示（DOM生成）--- */
-    function fillNumbersDOM(container) {
-      // 0～7 を4回繰り返して32行など
-      const repeatTimes = 4;
-      const digits = [];
+    /* --- 各リールに表示する画像のリスト --- */
+    const reelImages = {
+      reel1: ['bell.png', '7.png', 'pierrot.png', '0.png', 'cherry.png', 'bar.png', 'animal.png'],
+      reel2: ['bell.png', '7.png', 'pierrot.png', 'cherry.png', 'bar.png', '3.png', 'animal.png'],
+      reel3: ['bell.png', '7.png', 'pierrot.png', 'cherry.png', '6.png', 'bar.png', 'animal.png']
+    };
+
+    /* --- 各リールを画像に変更してDOMに追加 --- */
+    function fillReelImages(container, images) {
+      const repeatTimes = 4; // 画像リストを4回繰り返す
+      const items = [];
       for(let r=0; r<repeatTimes; r++){
-        for(let n=0; n<8; n++){
-          digits.push(n);
-        }
+        images.forEach(img => items.push(img));
       }
       container.innerHTML = '';
-      digits.forEach(num => {
+      items.forEach(imgSrc => {
         const div = document.createElement('div');
-        div.textContent = num;
+        const img = document.createElement('img');
+        img.src = imgSrc;
+        img.alt = imgSrc.replace('.png', '');
+        img.style.width = '100%'; // リール枠に合わせて画像の幅を調整
+        img.style.height = 'auto'; // 高さは自動調整
+        div.appendChild(img);
         container.appendChild(div);
       });
     }
-    fillNumbersDOM(numbers1);
-    fillNumbersDOM(numbers2);
-    fillNumbersDOM(numbers3);
 
-    let isSpinning = [false, false, false];
+    /* --- すべてのリールを初期化 --- */
+    function fillAllReels() {
+      fillReelImages(numbers1, reelImages.reel1);
+      fillReelImages(numbers2, reelImages.reel2);
+      fillReelImages(numbers3, reelImages.reel3);
+    }
+
+    let isSpinningFlag = [false, false, false];
     let reelPos = [0, 0, 0];
     let reelTimer = [null, null, null];
-    const reelHeight = 30 * 8 * 4;  // 32行 * 30px = 960px
+    const reelHeight = 30 * 7 * 4;  // 7画像 * 4回繰り返し * 30px = 840px
     const scrollSpeed = 60;         // px/interval
 
     // 抽選結果
-    let finalResults = [0, 0, 0];
+    let finalResults = ['bell.png', 'bell.png', 'bell.png']; // 初期値
 
     // GOGO状態
     let isGogoActive = false;
@@ -507,17 +515,19 @@
       }
 
       notification.classList.add('show');
+      notification.style.display = 'block';
     }
 
     // 通知を非表示にする関数
     function hideNotification() {
       notification.classList.remove('show');
+      notification.style.display = 'none';
     }
 
     // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
     function startSlotIfNotSpinning() {
       // まだ回転中なら何もしない
-      if(isSpinning.some(sp => sp)) return;
+      if(isSpinningFlag.some(sp => sp)) return;
 
       // 回転数アップ
       spinCount++;
@@ -526,33 +536,34 @@
 
       // メッセージ等リセット
       displayMessage.textContent = "";
-      // winImage.style.display = "none"; // winImageに関するコードを削除
 
       // 抽選
-      // [0,3,6]が36%または0.36%、[7,7,7]が0.1%、その他が残り0.54%
+      // [0,3,6]が36%、
+      // [7,7,7]が1%、
+      // その他が63%
       let rand = Math.random();
       if(isGogoActive){
         if(rand < 0.36){
-          finalResults = [0, 3, 6];
-        } else if(rand < 0.72){
-          finalResults = [7, 7, 7];
+          finalResults = ['0.png', '3.png', '6.png'];
+        } else if(rand < 0.37){
+          finalResults = ['7.png', '7.png', '7.png'];
         } else {
           finalResults = [
-            Math.floor(Math.random() * 8),
-            Math.floor(Math.random() * 8),
-            Math.floor(Math.random() * 8),
+            getRandomImage('reel1'),
+            getRandomImage('reel2'),
+            getRandomImage('reel3'),
           ];
         }
       } else {
-        if(rand < 0.0036){ // 0.36%に相当
-          finalResults = [0, 3, 6];
-        } else if(rand < 0.0046){ // 0.36% + 0.1% = 0.46%
-          finalResults = [7, 7, 7];
+        if(rand < 0.36){
+          finalResults = ['0.png', '3.png', '6.png'];
+        } else if(rand < 0.37){
+          finalResults = ['7.png', '7.png', '7.png'];
         } else {
           finalResults = [
-            Math.floor(Math.random() * 8),
-            Math.floor(Math.random() * 8),
-            Math.floor(Math.random() * 8),
+            getRandomImage('reel1'),
+            getRandomImage('reel2'),
+            getRandomImage('reel3'),
           ];
         }
       }
@@ -568,9 +579,16 @@
       stopBtn3.disabled = false;
     }
 
+    // ランダムにリールから画像を選択
+    function getRandomImage(reel) {
+      const images = reelImages[reel];
+      // Exclude specific images if necessary
+      return images[Math.floor(Math.random() * images.length)];
+    }
+
     // リール回転
     function startReel(idx) {
-      isSpinning[idx] = true;
+      isSpinningFlag[idx] = true;
       reelPos[idx] = 0;
       const container = [numbers1, numbers2, numbers3][idx];
       // 既存のsetIntervalがあればクリア
@@ -592,9 +610,9 @@
     stopBtn3.addEventListener('click', () => stopReel(2, stopBtn3));
 
     function stopReel(idx, btn){
-      if(!isSpinning[idx]) return;
+      if(!isSpinningFlag[idx]) return;
       clearInterval(reelTimer[idx]);
-      isSpinning[idx] = false;
+      isSpinningFlag[idx] = false;
       btn.disabled = true;
 
       // 最終結果をリール中央に合わせる
@@ -605,11 +623,12 @@
 
       let bestIndex = 0;
 
-      // 最も近い位置の数字を選択
+      // 最も近い位置の画像を選択
       let minDistance = Infinity;
       for(let i=0; i<allDivs.length; i++){
-        const num = parseInt(allDivs[i].textContent,10);
-        if(num === finalVal){
+        const img = allDivs[i].querySelector('img');
+        const src = img.getAttribute('src');
+        if(src === finalVal){
           const desiredOffset = i * 30 - 25; // (真ん中40px付近に行を合わせる)
           const distance = Math.abs(desiredOffset - reelPos[idx]);
           if(distance < minDistance){
@@ -627,7 +646,7 @@
       allDivs[bestIndex].classList.add('boldNumber');
 
       // 全停止したら結果判定とGOGO.pngの表示抽選
-      if(!isSpinning[0] && !isSpinning[1] && !isSpinning[2]){
+      if(!isSpinningFlag[0] && !isSpinningFlag[1] && !isSpinningFlag[2]){
         checkResult();
 
         // 1回転終了後にGOGO.pngの表示を抽選
@@ -637,10 +656,9 @@
 
     function checkResult(){
       const [r1, r2, r3] = finalResults;
-      if(r1===0 && r2===3 && r3===6){
-        // [0,3,6]ジャックポット
+      if(r1 === '0.png' && r2 === '3.png' && r3 === '6.png'){
+        // [0.png,3.png,6.png]ジャックポット
         displayMessage.textContent = "当たり";
-        // winImage.style.display = "block"; // osm.pngを削除
         // ジャックポット回数アップ
         jackpotCount++;
         localStorage.setItem('slotJackpotCount', jackpotCount);
@@ -653,17 +671,16 @@
 
         // 通知エリアにメッセージとリンクを表示
         showNotification("036が出ました！\nおめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F");
-      } else if(r1===7 && r2===7 && r3===7){
-        // [7,7,7]ジャックポット
+      } else if(r1 === '7.png' && r2 === '7.png' && r3 === '7.png'){
+        // [7.png,7.png,7.png]ジャックポット
         displayMessage.textContent = "当たり";
-        // winImage.style.display = "block"; // osm.pngを削除
         // 回転数リセット
-        spinCount=0;
+        spinCount = 0;
         localStorage.setItem('slotSpinCount', spinCount);
         updateSpinCountDisplay();
 
         // 通知エリアにメッセージとリンクを表示
-        showNotification("777が出ました！\nおめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/777%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F");
+        showNotification("777が出ました！\nおめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/%20777%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
       } else {
         displayMessage.textContent = "36分の１の確率で何かが起こる!!";
       }
@@ -672,7 +689,7 @@
     // GOGO.pngの表示抽選
     function performGogoDraw(){
       const rand = Math.random();
-      if(rand < 0.27){ // 2.7%の確率
+      if(rand < 0.027){ // 2.7%の確率
         showGogo();
       }
       // 2.7%の確率で0.027表示されるので、97.3％は何もしない
@@ -695,9 +712,9 @@
       // 営業時間内の場合のみ初期化
       if(isWithinBusinessHours()){
         initializeCounts();
+        fillAllReels();
       }
     });
-
   </script>
 </body>
 </html>
