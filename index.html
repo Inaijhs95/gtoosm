@@ -22,28 +22,38 @@
       min-height: 100vh;
     }
 
-    /* 通知エリア */
-    #notification {
-      position: fixed; /* 画面上部に固定 */
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(255, 255, 255, 0.95);
-      color: #000;
-      padding: 15px 25px;
-      border-radius: 8px;
-      display: none; /* 初期状態は非表示 */
-      z-index: 100; /* 他の要素より前面に表示 */
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      font-size: 1em;
-      max-width: 90%;
-      text-align: center;
-      transition: top 0.5s ease; /* スライドイン・アウトのアニメーション */
-    }
-    /* 通知が表示されるときの位置 */
-    #notification.show {
-      top: 20px;
-    }
+  /* 通知エリア */
+#notification {
+  position: fixed; /* 画面上部に固定 */
+  top: -60px; /* 初期位置を調整（表示時にスライドインするため） */
+  left: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #000;
+  padding: 15px 25px;
+  border-radius: 0; /* 必要に応じて調整（上下のみ丸める場合例を後述） */
+  display: none; /* 初期状態は非表示 */
+  z-index: 100; /* 他の要素より前面に表示 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-size: 1em;
+  width: 100%; /* 幅を画面全体に設定 */
+  text-align: center;
+  transition: top 0.5s ease; /* スライドイン・アウトのアニメーション */
+}
+
+/* 通知が表示されるときの位置 */
+#notification.show {
+  top: 20px;
+}
+
+/* 角を上下のみ丸める場合の例 */
+#notification {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
     /* 閉じるボタン */
     #notification .close-btn {
       position: absolute;
