@@ -405,7 +405,7 @@
         // リンクを追加
         const link = document.createElement('a');
         link.href = redirectURL;
-        link.textContent = 'ここをクリック';
+        link.textContent = 'LINEで報告!!';
         link.style.color = '#007bff';
         link.style.textDecoration = 'underline';
         link.style.marginLeft = '10px';
@@ -453,7 +453,7 @@
       } else {
         if(rand < 0.0036){ // 0.36%に相当
           finalResults = [0, 3, 6];
-        } else if(rand < 0.0136){ // 0.36% + 1% = 1.36%
+        } else if(rand < 0.0046){ // 0.36% + 0.1% = 0.46%
           finalResults = [7, 7, 7];
         } else {
           finalResults = [
@@ -570,16 +570,16 @@
         updateSpinCountDisplay();
 
         // 通知エリアにメッセージとリンクを表示
-        showNotification("777が出ました！\n主催者に報告しましょう。\n", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
+        showNotification("777が出ました！\nおめでとうございます！\n", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
       } else {
-        displayMessage.textContent = "36分の１の確率で何かが起こる!!";
+        displayMessage.textContent = "スゴく低確率!!!!";
       }
     }
 
     // GOGO.pngの表示抽選
     function performGogoDraw(){
       const rand = Math.random();
-      if(rand < 0.5){
+      if(rand < 0.027){
         showGogo();
       }
       // 2.7%の確率で0.027表示されるので、97.3％は何もしない
