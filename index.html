@@ -38,6 +38,21 @@
       font-size: 1em;
       max-width: 90%;
       text-align: center;
+      position: relative; /* 閉じるボタンの位置指定に必要 */
+    }
+    /* 閉じるボタン */
+    #notification .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 1.2em;
+      cursor: pointer;
+      color: #000;
+    }
+    #notification .close-btn:hover {
+      color: #555;
     }
 
     /* スロット台 */
@@ -221,14 +236,32 @@
     .gogo-image {
       z-index: 5; /* silhouette.pngより前面に表示 */
     }
+
+    /* 営業時間外メッセージのスタイル */
+    #closed-message {
+      background-color: rgba(255, 255, 255, 0.95);
+      color: #000;
+      padding: 20px 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-size: 1.5em;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
   <!-- 通知エリア -->
-  <div id="notification"></div>
+  <div id="notification">
+    <button class="close-btn" id="closeNotification">&times;</button>
+    <span id="notificationMessage"></span>
+    <a href="#" id="notificationLink" target="_blank" style="margin-left: 10px; color: #007bff; text-decoration: underline;"></a>
+  </div>
 
-  <div class="slot-machine">
+  <!-- 営業時間外メッセージ（初期は非表示） -->
+  <div id="closed-message" style="display: none;">営業時間外です</div>
+
+  <div class="slot-machine" id="slotMachine">
     <!-- ディスプレイ -->
     <div class="slot-display">
       <h2>スロットπの秘宝</h2>
@@ -295,10 +328,38 @@
     // ----------------------------------------
     const leverBall = document.getElementById('leverBall');
     const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notificationMessage');
+    const notificationLink = document.getElementById('notificationLink');
+    const closeNotificationBtn = document.getElementById('closeNotification');
 
     // 追加: silhouette.png と GOGO.png の参照
     const silhouetteImage = document.getElementById('silhouetteImage');
     const gogoImage = document.getElementById('gogoImage');
+
+    // 営業時間外のメッセージとスロットマシンの参照
+    const closedMessage = document.getElementById('closed-message');
+    const slotMachine = document.getElementById('slotMachine');
+
+    // 営業時間チェック関数
+    function isWithinBusinessHours() {
+      const now = new Date();
+      const hours = now.getHours();
+      return hours >= 8 && hours < 24;
+    }
+
+    // 営業時間外の場合の処理
+    if (!isWithinBusinessHours()) {
+      slotMachine.style.display = 'none';
+      closedMessage.style.display = 'block';
+    } else {
+      // 営業時間内の処理を続行
+      // ここにスロットマシンの初期化コードを置く
+    }
+
+    // 閉じるボタンのイベントリスナー
+    closeNotificationBtn.addEventListener('click', () => {
+      notification.style.display = 'none';
+    });
 
     // PCマウス用: mousedown で回転開始
     leverBall.addEventListener('mousedown', e => {
@@ -352,18 +413,48 @@
     const numbers3 = document.getElementById('numbers3');
 
     /* --- 回転数とジャックポット回数を localStorage で管理 --- */
-    let spinCount = parseInt(localStorage.getItem('slotSpinCount') || '0', 10);
-    let jackpotCount = parseInt(localStorage.getItem('slotJackpotCount') || '0', 10);
+    let spinCount = 0;
+    let jackpotCount = 0;
+
+    // 日付フォーマット関数（YYYY-MM-DD）
+    function getCurrentDateString() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // 日付のチェックとカウントのリセット
+    function initializeCounts() {
+      const todayStr = getCurrentDateString();
+      const lastDate = localStorage.getItem('slotLastDate');
+
+      if (lastDate !== todayStr) {
+        // 新しい日なのでカウントをリセット
+        spinCount = 0;
+        jackpotCount = 0;
+        localStorage.setItem('slotSpinCount', spinCount);
+        localStorage.setItem('slotJackpotCount', jackpotCount);
+        localStorage.setItem('slotLastDate', todayStr);
+      } else {
+        // 同じ日なのでカウントを取得
+        spinCount = parseInt(localStorage.getItem('slotSpinCount') || '0', 10);
+        jackpotCount = parseInt(localStorage.getItem('slotJackpotCount') || '0', 10);
+      }
+      updateSpinCountDisplay();
+    }
+
+    initializeCounts();
 
     function updateSpinCountDisplay() {
       spinCountText.textContent = `回転数：${spinCount}`;
       jackpotCountText.textContent = `当選回数：${jackpotCount}`;
     }
-    updateSpinCountDisplay();
 
     /* --- 0～7 を何回か繰り返したリストを各リールに表示（DOM生成）--- */
     function fillNumbersDOM(container) {
-      // 0～7 を4回繰り返して計32行など
+      // 0～7 を4回繰り返して32行など
       const repeatTimes = 4;
       const digits = [];
       for(let r=0; r<repeatTimes; r++){
@@ -396,29 +487,21 @@
 
     // 通知を表示する関数
     function showNotification(message, isCritical=false, redirectURL=null) {
-      notification.innerHTML = ''; // 既存の内容をクリア
-      const messageSpan = document.createElement('span');
-      messageSpan.textContent = message;
-      notification.appendChild(messageSpan);
+      notificationMessage.textContent = message;
 
       if(isCritical && redirectURL){
-        // リンクを追加
-        const link = document.createElement('a');
-        link.href = redirectURL;
-        link.textContent = 'LINEで報告!!';
-        link.style.color = '#007bff';
-        link.style.textDecoration = 'underline';
-        link.style.marginLeft = '10px';
-        link.target = '_blank'; // 新しいタブで開く
-
-        notification.appendChild(link);
+        // リンクを設定
+        notificationLink.href = redirectURL;
+        notificationLink.textContent = 'LINEで報告!!';
+        notificationLink.style.display = 'inline';
+      } else {
+        notificationLink.style.display = 'none';
       }
 
       notification.style.display = 'block';
-      // 5秒後に自動で非表示（必要に応じて調整）
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 5000);
+      // setTimeout(() => {
+      //   notification.style.display = 'none';
+      // }, 5000); // 自動非表示を削除
     }
 
     // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
@@ -559,7 +642,7 @@
         }
 
         // 通知エリアにメッセージとリンクを表示
-        showNotification("036が出ました！\nおめでとうございます！\n", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F");
+        showNotification("036が出ました！\nおめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A1%E3%83%A2%E3%81%AE%E8%AC%8E%E3%80%81%E8%A7%A3%E3%81%91%E3%81%BE%E3%81%97%E3%81%9F");
       } else if(r1===7 && r2===7 && r3===7){
         // [7,7,7]ジャックポット
         displayMessage.textContent = "当たり";
@@ -570,7 +653,7 @@
         updateSpinCountDisplay();
 
         // 通知エリアにメッセージとリンクを表示
-        showNotification("777が出ました！\nおめでとうございます！\n", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
+        showNotification("777が出ました！\nおめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/%E3%83%A9%E3%83%83%E3%82%AD%E3%83%BC%E3%82%BB%E3%83%B3%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
       } else {
         displayMessage.textContent = "スゴく低確率!!!!";
       }
@@ -594,6 +677,16 @@
       isGogoActive = false;
       gogoImage.style.display = 'none';
     }
+
+    // ----------------------------------------
+    //  ページ読み込み時の初期化
+    // ----------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      // 営業時間内の場合のみ初期化
+      if(isWithinBusinessHours()){
+        initializeCounts();
+      }
+    });
 
   </script>
 </body>
