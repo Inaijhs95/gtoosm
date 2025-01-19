@@ -252,6 +252,12 @@
       font-size: 1.5em;
       text-align: center;
     }
+
+    /* リール内の画像に対するスタイル */
+    .numbers img {
+      width: 100%; /* リール枠に合わせて画像の幅を調整 */
+      height: auto; /* 高さは自動調整 */
+    }
   </style>
 </head>
 <body>
@@ -371,32 +377,39 @@
     leverBall.addEventListener('mousedown', e => {
       e.preventDefault();
       handleLeverPress();
+      console.log('Lever pressed via mousedown');
     });
     // 指を離したら押し込み解除
     leverBall.addEventListener('mouseup', e => {
       leverBall.classList.remove('pressed');
+      console.log('Lever released via mouseup');
     });
     leverBall.addEventListener('mouseleave', e => {
       leverBall.classList.remove('pressed');
+      console.log('Lever released via mouseleave');
     });
 
     // スマホタッチ用: touchstart で回転開始
     leverBall.addEventListener('touchstart', e => {
       e.preventDefault();
       handleLeverPress();
+      console.log('Lever pressed via touchstart');
     }, {passive:false});
     // 離したら押し込み解除
     leverBall.addEventListener('touchend', () => {
       leverBall.classList.remove('pressed');
+      console.log('Lever released via touchend');
     });
     leverBall.addEventListener('touchcancel', () => {
       leverBall.classList.remove('pressed');
+      console.log('Lever released via touchcancel');
     });
 
     // レバー押し込み時の処理をまとめた関数
     function handleLeverPress() {
       // レバーを下げる演出
       leverBall.classList.add('pressed');
+      console.log('Lever pressed - .pressed class added');
 
       // スロットを回し始める
       startSlotIfNotSpinning();
@@ -442,10 +455,12 @@
         localStorage.setItem('slotSpinCount', spinCount);
         localStorage.setItem('slotJackpotCount', jackpotCount);
         localStorage.setItem('slotLastDate', todayStr);
+        console.log('Counts reset for a new day');
       } else {
         // 同じ日なのでカウントを取得
         spinCount = parseInt(localStorage.getItem('slotSpinCount') || '0', 10);
         jackpotCount = parseInt(localStorage.getItem('slotJackpotCount') || '0', 10);
+        console.log('Counts loaded from localStorage');
       }
       updateSpinCountDisplay();
     }
@@ -473,13 +488,14 @@
       items.forEach(imgSrc => {
         const div = document.createElement('div');
         const img = document.createElement('img');
-        img.src = imgSrc;
+        img.src = `images/${imgSrc}`; // 画像のパスを指定
         img.alt = imgSrc.replace('.png', '');
         img.style.width = '100%'; // リール枠に合わせて画像の幅を調整
         img.style.height = 'auto'; // 高さは自動調整
         div.appendChild(img);
         container.appendChild(div);
       });
+      console.log(`Filled ${container.id} with images:`, images);
     }
 
     /* --- すべてのリールを初期化 --- */
@@ -516,55 +532,68 @@
 
       notification.classList.add('show');
       notification.style.display = 'block';
+      console.log('Notification shown:', message);
     }
 
     // 通知を非表示にする関数
     function hideNotification() {
       notification.classList.remove('show');
       notification.style.display = 'none';
+      console.log('Notification hidden');
     }
 
     // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
     function startSlotIfNotSpinning() {
       // まだ回転中なら何もしない
-      if(isSpinningFlag.some(sp => sp)) return;
+      if(isSpinningFlag.some(sp => sp)) {
+        console.log('Slot is already spinning');
+        return;
+      }
 
       // 回転数アップ
       spinCount++;
       localStorage.setItem('slotSpinCount', spinCount);
       updateSpinCountDisplay();
+      console.log(`Spin count incremented: ${spinCount}`);
 
       // メッセージ等リセット
       displayMessage.textContent = "";
 
       // 抽選
-      // [0,3,6]が36%、
-      // [7,7,7]が1%、
+      // [0.png,3.png,6.png]が36%、
+      // [7.png,7.png,7.png]が1%、
       // その他が63%
       let rand = Math.random();
+      console.log('Random number for draw:', rand);
       if(isGogoActive){
         if(rand < 0.36){
           finalResults = ['0.png', '3.png', '6.png'];
+          console.log('Draw result: [0.png, 3.png, 6.png]');
         } else if(rand < 0.37){
           finalResults = ['7.png', '7.png', '7.png'];
+          console.log('Draw result: [7.png, 7.png, 7.png]');
         } else {
           finalResults = [
             getRandomImage('reel1'),
             getRandomImage('reel2'),
             getRandomImage('reel3'),
           ];
+          console.log('Draw result: Random images:', finalResults);
         }
       } else {
         if(rand < 0.36){
           finalResults = ['0.png', '3.png', '6.png'];
+          console.log('Draw result: [0.png, 3.png, 6.png]');
         } else if(rand < 0.37){
           finalResults = ['7.png', '7.png', '7.png'];
+          console.log('Draw result: [7.png, 7.png, 7.png]');
         } else {
           finalResults = [
             getRandomImage('reel1'),
             getRandomImage('reel2'),
             getRandomImage('reel3'),
           ];
+          console.log('Draw result: Random images:', finalResults);
         }
       }
 
@@ -577,13 +606,15 @@
       stopBtn1.disabled = false;
       stopBtn2.disabled = false;
       stopBtn3.disabled = false;
+      console.log('STOP buttons enabled');
     }
 
     // ランダムにリールから画像を選択
     function getRandomImage(reel) {
       const images = reelImages[reel];
-      // Exclude specific images if necessary
-      return images[Math.floor(Math.random() * images.length)];
+      const randomImage = images[Math.floor(Math.random() * images.length)];
+      console.log(`Random image selected for ${reel}: ${randomImage}`);
+      return randomImage;
     }
 
     // リール回転
@@ -602,6 +633,7 @@
         }
         container.style.transform = `translateY(-${reelPos[idx]}px)`;
       }, 20);
+      console.log(`Reel ${idx+1} started spinning`);
     }
 
     // STOPボタン
@@ -610,10 +642,14 @@
     stopBtn3.addEventListener('click', () => stopReel(2, stopBtn3));
 
     function stopReel(idx, btn){
-      if(!isSpinningFlag[idx]) return;
+      if(!isSpinningFlag[idx]) {
+        console.log(`Reel ${idx+1} is not spinning`);
+        return;
+      }
       clearInterval(reelTimer[idx]);
       isSpinningFlag[idx] = false;
       btn.disabled = true;
+      console.log(`Reel ${idx+1} stopped`);
 
       // 最終結果をリール中央に合わせる
       const finalVal = finalResults[idx];
@@ -627,7 +663,8 @@
       let minDistance = Infinity;
       for(let i=0; i<allDivs.length; i++){
         const img = allDivs[i].querySelector('img');
-        const src = img.getAttribute('src');
+        if (!img) continue; // imgが存在しない場合を防ぐ
+        const src = img.getAttribute('src').split('/').pop(); // 'images/bell.png' -> 'bell.png'
         if(src === finalVal){
           const desiredOffset = i * 30 - 25; // (真ん中40px付近に行を合わせる)
           const distance = Math.abs(desiredOffset - reelPos[idx]);
@@ -644,6 +681,7 @@
       container.style.transform = `translateY(-${reelPos[idx]}px)`;
 
       allDivs[bestIndex].classList.add('boldNumber');
+      console.log(`Reel ${idx+1} positioned at image: ${finalVal}`);
 
       // 全停止したら結果判定とGOGO.pngの表示抽選
       if(!isSpinningFlag[0] && !isSpinningFlag[1] && !isSpinningFlag[2]){
@@ -656,6 +694,7 @@
 
     function checkResult(){
       const [r1, r2, r3] = finalResults;
+      console.log('Checking result:', finalResults);
       if(r1 === '0.png' && r2 === '3.png' && r3 === '6.png'){
         // [0.png,3.png,6.png]ジャックポット
         displayMessage.textContent = "当たり";
@@ -663,6 +702,7 @@
         jackpotCount++;
         localStorage.setItem('slotJackpotCount', jackpotCount);
         updateSpinCountDisplay();
+        console.log('Jackpot [0.png, 3.png, 6.png] achieved');
 
         // GOGO.pngが表示されている場合は非表示にする
         if(isGogoActive){
@@ -678,31 +718,36 @@
         spinCount = 0;
         localStorage.setItem('slotSpinCount', spinCount);
         updateSpinCountDisplay();
+        console.log('Jackpot [7.png, 7.png, 7.png] achieved');
 
         // 通知エリアにメッセージとリンクを表示
         showNotification("777が出ました！\nおめでとうございます！", true, "https://line.me/R/oaMessage/%40778unfqy/%20777%E6%8F%83%E3%81%84%E3%81%BE%E3%81%97%E3%81%9F%EF%BC%81");
       } else {
         displayMessage.textContent = "36分の１の確率で何かが起こる!!";
+        console.log('No jackpot. Display message updated');
       }
     }
 
     // GOGO.pngの表示抽選
     function performGogoDraw(){
       const rand = Math.random();
+      console.log('Random number for GOGO draw:', rand);
       if(rand < 0.027){ // 2.7%の確率
         showGogo();
       }
-      // 2.7%の確率で0.027表示されるので、97.3％は何もしない
+      // 2.7%の確率でGOGO.pngが表示されるので、97.3％は何もしない
     }
 
     function showGogo(){
       isGogoActive = true;
       gogoImage.style.display = 'block';
+      console.log('GOGO.png is now displayed');
     }
 
     function hideGogo(){
       isGogoActive = false;
       gogoImage.style.display = 'none';
+      console.log('GOGO.png is now hidden');
     }
 
     // ----------------------------------------
@@ -713,6 +758,7 @@
       if(isWithinBusinessHours()){
         initializeCounts();
         fillAllReels();
+        console.log('Page initialized and reels filled');
       }
     });
   </script>
