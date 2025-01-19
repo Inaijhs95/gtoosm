@@ -39,6 +39,11 @@
       max-width: 90%;
       text-align: center;
       position: relative; /* 閉じるボタンの位置指定に必要 */
+      transition: top 0.5s ease; /* スライドイン・アウトのアニメーション */
+    }
+    /* 通知が表示されるときの位置 */
+    #notification.show {
+      top: 20px;
     }
     /* 閉じるボタン */
     #notification .close-btn {
@@ -259,7 +264,10 @@
   </div>
 
   <!-- 営業時間外メッセージ（初期は非表示） -->
-  <div id="closed-message" style="display: none;">営業時間外です</div>
+  <div id="closed-message" style="display: none;">
+    営業時間外です。<br>
+    AM8時からPM12時にお越しください。
+  </div>
 
   <div class="slot-machine" id="slotMachine">
     <!-- ディスプレイ -->
@@ -344,7 +352,7 @@
     function isWithinBusinessHours() {
       const now = new Date();
       const hours = now.getHours();
-      return hours >= 8 && hours < 24;
+      return hours >= 11 && hours < 24; // 午前8時から正午12時
     }
 
     // 営業時間外の場合の処理
@@ -487,7 +495,7 @@
 
     // 通知を表示する関数
     function showNotification(message, isCritical=false, redirectURL=null) {
-      notificationMessage.textContent = message;
+      notificationMessage.innerHTML = message.replace(/\n/g, '<br>'); // 改行を反映
 
       if(isCritical && redirectURL){
         // リンクを設定
@@ -498,10 +506,12 @@
         notificationLink.style.display = 'none';
       }
 
-      notification.style.display = 'block';
-      // setTimeout(() => {
-      //   notification.style.display = 'none';
-      // }, 5000); // 自動非表示を削除
+      notification.classList.add('show');
+    }
+
+    // 通知を非表示にする関数
+    function hideNotification() {
+      notification.classList.remove('show');
     }
 
     // レバーを押した瞬間に呼ばれる(もし未回転ならスタート)
@@ -519,7 +529,7 @@
       // winImage.style.display = "none"; // winImageに関するコードを削除
 
       // 抽選
-      // [0,3,6]が36%または0.36%、[7,7,7]が0.1%、その他が残り0.361
+      // [0,3,6]が36%または0.36%、[7,7,7]が0.1%、その他が残り0.54%
       let rand = Math.random();
       if(isGogoActive){
         if(rand < 0.36){
@@ -662,7 +672,7 @@
     // GOGO.pngの表示抽選
     function performGogoDraw(){
       const rand = Math.random();
-      if(rand < 0.27){
+      if(rand < 0.27){ // 2.7%の確率
         showGogo();
       }
       // 2.7%の確率で0.027表示されるので、97.3％は何もしない
