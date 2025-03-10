@@ -1,3 +1,6 @@
+リアルなスロットマシンのデザインに近づけたUI改良版を作成しました。よりカジノ風の質感と立体感を出し、本物のスロットマシンのような見た目に仕上げています。
+
+```html
 <!DOCTYPE html> 
 <html lang="ja">
 <head>
@@ -11,48 +14,48 @@
       margin: 0;
       padding: 0;
     }
+    
     body {
-      background: #444;
+      background: linear-gradient(135deg, #1a1a1a, #333333);
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       display: flex;
-      flex-direction: column; /* 通知エリアとスロットマシンを縦に並べる */
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      padding: 20px;
     }
 
-  /* 通知エリア */
-#notification {
-  position: fixed; /* 画面上部に固定 */
-  top: -60px; /* 初期位置を調整（表示時にスライドインするため） */
-  left: 0;
-  right: 0;
-  background-color: rgba(255, 255, 255, 0.95);
-  color: #000;
-  padding: 15px 25px;
-  border-radius: 0; /* 必要に応じて調整（上下のみ丸める場合例を後述） */
-  display: none; /* 初期状態は非表示 */
-  z-index: 100; /* 他の要素より前面に表示 */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  font-size: 1em;
-  width: 100%; /* 幅を画面全体に設定 */
-  text-align: center;
-  transition: top 0.5s ease; /* スライドイン・アウトのアニメーション */
-}
+    /* 通知エリア */
+    #notification {
+      position: fixed;
+      top: -60px;
+      left: 0;
+      right: 0;
+      background-color: rgba(255, 255, 255, 0.95);
+      color: #000;
+      padding: 15px 25px;
+      border-radius: 0;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      font-size: 1em;
+      width: 100%;
+      text-align: center;
+      transition: top 0.5s ease;
+    }
 
-/* 通知が表示されるときの位置 */
-#notification.show {
-  top: 20px;
-}
+    #notification.show {
+      top: 20px;
+    }
 
-/* 角を上下のみ丸める場合の例 */
-#notification {
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
+    #notification {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
 
     /* 閉じるボタン */
     #notification .close-btn {
@@ -65,6 +68,7 @@
       cursor: pointer;
       color: #000;
     }
+    
     #notification .close-btn:hover {
       color: #555;
     }
@@ -72,45 +76,114 @@
     /* スロット台 */
     .slot-machine {
       width: 420px;
-      background: #222;
-      border: 6px solid #000;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.8);
+      background: linear-gradient(to bottom, #4a4a4a, #222222);
+      border: 8px solid #111;
+      border-radius: 15px;
+      box-shadow: 
+        0 10px 30px rgba(0,0,0,0.8),
+        inset 0 2px 8px rgba(255,255,255,0.2),
+        inset 0 -2px 8px rgba(0,0,0,0.8);
       position: relative;
       overflow: hidden;
-      padding-bottom: 20px; /* 下部に少し余裕 */
+      padding-bottom: 20px;
+      margin-top: 20px;
+    }
+
+    /* 装飾用の金属ネジ */
+    .slot-machine::before,
+    .slot-machine::after {
+      content: "";
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: radial-gradient(circle at 40% 40%, #999, #555);
+      border-radius: 50%;
+      box-shadow: inset 0 -2px 2px rgba(0,0,0,0.6);
+    }
+    
+    .slot-machine::before {
+      top: 10px;
+      left: 10px;
+    }
+    
+    .slot-machine::after {
+      top: 10px;
+      right: 10px;
     }
 
     /* --- 上部ディスプレイ部 --- */
     .slot-display {
-      background: #e9212d;
-      padding: 10px;
-      height: 120px; /* 高さを調整して通知エリアを追加 */
-      border-bottom: 3px solid #000;
+      background: linear-gradient(to bottom, #e83142, #c01020);
+      padding: 15px;
+      height: 130px;
+      border-bottom: 4px solid #000;
       text-align: center;
       position: relative;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      box-shadow: 
+        inset 0 1px 8px rgba(255,255,255,0.3),
+        inset 0 -2px 5px rgba(0,0,0,0.4);
     }
+    
+    .slot-display::before,
+    .slot-display::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(circle at 40% 40%, #999, #555);
+      border-radius: 50%;
+      box-shadow: inset 0 -2px 2px rgba(0,0,0,0.6);
+    }
+    
+    .slot-display::before {
+      bottom: 10px;
+      left: 10px;
+    }
+    
+    .slot-display::after {
+      bottom: 10px;
+      right: 10px;
+    }
+    
     .slot-display h2 {
-      font-size: 1.5em;
-      margin-bottom: 8px;
+      font-size: 1.8em;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+      font-weight: bold;
+      color: #fff;
+      letter-spacing: 1px;
+      transform: perspective(300px) rotateX(10deg);
     }
+    
     #spinCountContainer {
       display: flex;
-      gap: 20px;
+      gap: 25px;
       align-items: center;
       margin-bottom: 5px;
+      padding: 5px 15px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 20px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
     }
+    
     #spinCountText, #jackpotCountText {
-      font-size: 1em;
+      font-size: 0.9em;
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+      font-weight: bold;
     }
+    
     #displayMessage {
       min-height: 20px;
       font-size: 1em;
-      margin-top: 5px;
+      margin-top: 8px;
+      color: #ffd700;
+      text-shadow: 0 0 5px rgba(255,215,0,0.7);
+      font-weight: bold;
     }
 
     /* --- 本体下部：レバー＆リール+ボタンたちを横一列に --- */
@@ -118,155 +191,268 @@
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding: 10px;
+      padding: 20px 10px;
       position: relative;
+      background: linear-gradient(to bottom, #333, #222);
+      border-top: 2px solid #444;
+      border-bottom: 2px solid #111;
     }
 
     /* レバーコンテナを左端に */
     .lever-container {
-      width: 60px;
-      height: 100px;
+      width: 70px;
+      height: 120px;
       position: relative;
-      margin-right: 10px;
+      margin-right: 20px;
+      margin-top: 10px;
     }
+    
     /* シルバー棒 */
     .lever-shaft {
       position: absolute;
-      left: 28px;
+      left: 33px;
       top: 0;
       width: 4px;
-      height: 100px;
-      background: linear-gradient(#bbb, #777);
+      height: 120px;
+      background: linear-gradient(to right, #999, #ccc, #999);
       border-radius: 2px;
+      box-shadow: -1px 0 2px rgba(0,0,0,0.5);
     }
+    
     /* 黒い球 */
     .lever-ball {
       position: absolute;
-      left: 10px;
+      left: 15px;
       top: 0;
       width: 40px;
       height: 40px;
-      background: radial-gradient(#222, #000);
+      background: radial-gradient(circle at 30% 30%, #444, #000);
       border-radius: 50%;
-      box-shadow: 0 0 8px rgba(0,0,0,0.6) inset, 0 4px 6px rgba(0,0,0,0.8);
+      box-shadow: 
+        0 0 8px rgba(0,0,0,0.6) inset, 
+        0 4px 8px rgba(0,0,0,0.8),
+        0 0 0 2px rgba(255,255,255,0.1);
       user-select: none;
-
-      /* スマホでのハイライト等を防ぐ(押し込み演出が見やすくなる) */
       -webkit-user-select: none;
       -webkit-touch-callout: none;
       -webkit-tap-highlight-color: transparent;
-      touch-action: none; 
-      
-      /* アニメーションを滑らかに */
-      transition: transform 0.2s ease;
+      touch-action: none;
+      transition: transform 0.15s ease;
       cursor: pointer;
+      z-index: 10;
     }
+    
     /* 押し込む間だけ下がるアニメを .pressed クラスで表現 */
     .lever-ball.pressed {
-      transform: translateY(40px);
+      transform: translateY(50px);
+      box-shadow: 
+        0 0 8px rgba(0,0,0,0.8) inset, 
+        0 2px 4px rgba(0,0,0,0.6),
+        0 0 0 2px rgba(255,255,255,0.05);
+    }
+    
+    /* レバーベース */
+    .lever-container::after {
+      content: "";
+      position: absolute;
+      left: 15px;
+      bottom: 0;
+      width: 40px;
+      height: 15px;
+      background: linear-gradient(to bottom, #333, #111);
+      border-radius: 5px;
+      box-shadow: 
+        inset 0 2px 3px rgba(255,255,255,0.1),
+        0 -1px 2px rgba(0,0,0,0.5);
     }
 
     /* --- リールとストップボタンを横並びで1列×3セット --- */
     .reels-stop-area {
       display: flex;
-      gap: 10px;
+      gap: 15px;
+      background: #111;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 
+        inset 0 0 15px rgba(0,0,0,0.8),
+        0 1px 2px rgba(255,255,255,0.05);
     }
+    
     .reel-stop {
       display: flex;
-      flex-direction: column; /* 縦にリール + ボタン */
+      flex-direction: column;
       align-items: center;
-      position: relative; /* 画像の重ね合わせに必要 */
+      position: relative;
     }
 
     /* リール枠 */
     .reel {
       width: 60px;
-      height: 120px; /* 画像高さ40px × 3枚 = 120px */
+      height: 120px;
       overflow: hidden;
       border-radius: 8px;
       background: #000;
-      box-shadow: inset 0 3px 10px rgba(0,0,0,0.5);
-      margin-bottom: 6px;
+      box-shadow: 
+        inset 0 3px 10px rgba(0,0,0,0.8),
+        0 0 0 2px #333,
+        0 0 0 3px #111;
+      margin-bottom: 10px;
       position: relative;
+      border: 1px solid rgba(255,255,255,0.1);
     }
+    
     /* リール内 */
     .numbers {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      background: #fff; /* 全体を白背景に */
-      /* transition: transform 0.5s ease; */ /* トランジションを削除 */
+      background: #fff;
     }
+    
     .numbers div {
-      height: 40px; /* 画像高さを40pxに変更 */
-      line-height: 40px; /* 画像高さに合わせて変更 */
+      height: 40px;
+      line-height: 40px;
       text-align: center;
-      background: transparent; /* 個々は透明(上で白背景にしている) */
+      background: transparent;
       color: #000;
       border-bottom: 1px solid #ccc;
-      font-size: 1em; /* フォントサイズを調整 */
+      font-size: 1em;
+    }
+
+    /* リールの上部と下部に光の反射効果 */
+    .reel::before,
+    .reel::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 20px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    
+    .reel::before {
+      top: 0;
+      background: linear-gradient(to bottom, 
+        rgba(255,255,255,0.2) 0%, 
+        rgba(255,255,255,0) 100%);
+    }
+    
+    .reel::after {
+      bottom: 0;
+      background: linear-gradient(to top, 
+        rgba(0,0,0,0.4) 0%, 
+        rgba(0,0,0,0) 100%);
     }
 
     /* ストップボタン(赤) */
     .stop-btn {
       width: 60px;
       height: 60px;
-      border-radius: 10px;
-      border: 2px solid #aa0000;
+      border-radius: 50%;
+      border: none;
       background: linear-gradient(to bottom, #ff5555, #bb0000);
       color: #fff;
       font-size: 0.8em;
       font-weight: bold;
-      box-shadow: 0 0 4px rgba(0,0,0,0.8) inset, 0 3px 6px rgba(0,0,0,0.4);
+      box-shadow: 
+        0 0 0 2px rgba(0,0,0,0.8),
+        0 0 0 4px rgba(100,0,0,0.5),
+        inset 0 -4px 4px rgba(0,0,0,0.3),
+        inset 0 2px 4px rgba(255,255,255,0.3);
       cursor: pointer;
+      text-shadow: 0 -1px 1px rgba(0,0,0,0.5);
+      transition: all 0.1s ease;
+      position: relative;
+      overflow: hidden;
     }
+    
+    .stop-btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50%;
+      background: linear-gradient(to bottom, 
+        rgba(255,255,255,0.3) 0%, 
+        rgba(255,255,255,0) 100%);
+      border-radius: 50% 50% 0 0;
+    }
+    
     .stop-btn:active {
-      transform: translateY(2px);
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+      transform: translateY(2px) scale(0.96);
+      box-shadow: 
+        0 0 0 2px rgba(0,0,0,0.8),
+        0 0 0 4px rgba(100,0,0,0.5),
+        inset 0 4px 4px rgba(0,0,0,0.6);
     }
+    
     .stop-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      background: linear-gradient(to bottom, #cc3333, #990000);
+      box-shadow: 
+        0 0 0 2px rgba(0,0,0,0.6),
+        0 0 0 4px rgba(100,0,0,0.3),
+        inset 0 0 4px rgba(0,0,0,0.5);
+      transform: none;
     }
 
     /* ストップ後、その行を太字にするクラス */
     .boldNumber {
       font-weight: bold;
+      background-color: rgba(255, 215, 0, 0.2) !important; /* 薄い金色の背景 */
     }
 
     /* silhouette.pngとGOGO.pngのスタイル */
     .silhouette-image, .gogo-image {
       position: absolute;
-      top: 100px; /* 少し下に調整 */
-      left: -255px; /* ストップボタンの右側に配置 */
+      top: 100px;
+      left: -255px;
       width: 120px;
       height: auto;
-      display: none; /* GOGO.pngは非表示。silhouette.pngは常時表示 */
+      display: none;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
+    
     .silhouette-image {
-      display: block; /* 常時表示 */
+      display: block;
+      opacity: 0.8;
     }
+    
     .gogo-image {
-      z-index: 5; /* silhouette.pngより前面に表示 */
+      z-index: 5;
+      animation: pulse 1.5s infinite alternate;
+    }
+    
+    @keyframes pulse {
+      from { transform: scale(1); filter: brightness(1) drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+      to { transform: scale(1.05); filter: brightness(1.2) drop-shadow(0 4px 8px rgba(255,165,0,0.7)); }
     }
 
     /* 営業時間外メッセージのスタイル */
     #closed-message {
-      background-color: rgba(255, 255, 255, 0.95);
-      color: #000;
-      padding: 20px 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: linear-gradient(to bottom, #444, #222);
+      color: #fff;
+      padding: 30px 40px;
+      border-radius: 15px;
+      box-shadow: 
+        0 10px 30px rgba(0,0,0,0.8),
+        inset 0 1px 8px rgba(255,255,255,0.2);
       font-size: 1.5em;
       text-align: center;
+      border: 5px solid #111;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
     }
 
     /* リール内の画像に対するスタイル */
     .numbers img {
-      width: 100%; /* リール枠に合わせて画像の幅を調整 */
-      height: 40px; /* 画像高さを40pxに固定 */
-      object-fit: contain; /* 画像が枠に収まるように調整 */
+      width: 100%;
+      height: 40px;
+      object-fit: contain;
+      transform: perspective(300px) rotateX(5deg);
     }
 
     /* --- バックボタンセクション --- */
@@ -274,73 +460,147 @@
       width: 100%;
       padding: 10px;
       border-radius: 8px;
-      background-color: #222222;
-      margin-top: 10px;
+      background: linear-gradient(to bottom, #333, #222);
+      margin-top: 15px;
       text-align: center;
       cursor: pointer;
       position: relative;
+      box-shadow: 
+        inset 0 1px 2px rgba(255,255,255,0.1),
+        0 2px 4px rgba(0,0,0,0.3);
+      border: 1px solid #111;
+      transition: all 0.2s ease;
     }
+    
+    .back-button-container:hover {
+      background: linear-gradient(to bottom, #3a3a3a, #282828);
+    }
+    
+    .back-button-container:active {
+      transform: translateY(1px);
+      box-shadow: 
+        inset 0 1px 3px rgba(0,0,0,0.3),
+        0 1px 2px rgba(0,0,0,0.2);
+    }
+    
     .back-button-container img {
       width: 100%;
       height: auto;
-      /* max-height: 50px; */ /* 見切れを防ぐため削除 */
-      object-fit: contain; /* 画像がコンテナに収まるように変更 */
+      object-fit: contain;
       border-radius: 6px;
+      max-height: 40px;
     }
 
     /* --- ヘルプモーダル --- */
     .modal {
-      display: none; /* 初期は非表示 */
+      display: none;
       position: fixed;
-      z-index: 200; /* 通知エリアより前面 */
+      z-index: 200;
       left: 0;
       top: 0;
       width: 100%;
       height: 100%;
       overflow: auto;
-      background-color: rgba(0,0,0,0.5); /* 背景の半透明 */
+      background-color: rgba(0,0,0,0.7);
       justify-content: center;
       align-items: center;
-      display: flex; /* フレックスボックスを使用 */
+      display: flex;
     }
+    
     .modal-content {
-      background-color: #fff;
-      color: #000;
-      padding: 20px 30px;
-      border-radius: 8px;
+      background: linear-gradient(to bottom, #eee, #ddd);
+      color: #111;
+      padding: 25px 30px;
+      border-radius: 15px;
       width: 80%;
       max-width: 400px;
       position: relative;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      box-shadow: 
+        0 10px 30px rgba(0,0,0,0.6),
+        inset 0 1px 8px rgba(255,255,255,0.8);
       text-align: left;
-      line-height: 1.5em;
+      line-height: 1.6em;
+      border: 3px solid #333;
     }
+    
     .modal-content h3 {
       margin-bottom: 15px;
+      color: #c01020;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+      font-size: 1.5em;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 5px;
     }
+    
     .modal-content .close-modal-btn {
       position: absolute;
       top: 10px;
       right: 15px;
       background: none;
       border: none;
-      font-size: 1.5em;
+      font-size: 1.8em;
       cursor: pointer;
-      color: #000;
+      color: #333;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.8);
     }
+    
     .modal-content .close-modal-btn:hover {
-      color: #555;
+      color: #c01020;
+    }
+
+    /* 装飾用ネオン効果 */
+    .slot-machine .neon-border {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(to right, 
+        transparent, 
+        rgba(255,0,0,0.8), 
+        rgba(255,165,0,0.8), 
+        rgba(255,255,0,0.8), 
+        rgba(0,255,0,0.8), 
+        rgba(0,0,255,0.8), 
+        rgba(128,0,128,0.8), 
+        transparent);
+      box-shadow: 0 0 10px rgba(255,0,0,0.5);
+      animation: neonFlow 5s linear infinite;
+    }
+    
+    @keyframes neonFlow {
+      0% { background-position: 0 0; }
+      100% { background-position: 400px 0; }
     }
 
     /* --- レスポンシブデザイン --- */
     @media (max-width: 500px) {
       .slot-machine {
-        width: 90%;
+        width: 95%;
         max-width: 420px;
       }
+      
       .modal-content {
         width: 90%;
         max-width: 400px;
+      }
+      
+      .reels-stop-area {
+        gap: 10px;
+        padding: 10px;
+      }
+      
+      .stop-btn {
+        width: 55px;
+        height: 55px;
+      }
+      
+      .machine-body {
+        padding: 15px 5px;
+      }
+      
+      .lever-container {
+        margin-right: 10px;
       }
     }
   </style>
@@ -361,6 +621,9 @@
   </div>
 
   <div class="slot-machine" id="slotMachine">
+    <!-- ネオン装飾 -->
+    <div class="neon-border"></div>
+    
     <!-- ディスプレイ -->
     <div class="slot-display">
       <h2>BIG CHANCE!</h2>
